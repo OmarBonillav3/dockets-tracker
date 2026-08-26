@@ -1,7 +1,8 @@
 /* ==========================================================================
    Dockets Tracker — design system
-   Surfaces replace borders. One accent (warm gold/brass). Neutrals share the
-   OKLCH hue family (~275) of the surfaces so the grayscale reads as one ramp.
+   Surfaces replace borders. One accent (deep wine red). Neutrals share the
+   warm cream hue family (~75-80) of the surfaces so the grayscale reads as
+   one warm ramp, not a cool gray one.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -9,38 +10,38 @@
    -------------------------------------------------------------------------- */
 
 :root {
-  /* Surfaces */
-  --base: #f7f7f8;
-  --surface: #ffffff;
-  --elevated: #ffffff;
+  /* Surfaces — warm cream */
+  --base: #f4eee1;
+  --surface: #fbf7ed;
+  --elevated: #fffef9;
 
   /* Recessed fills (inputs, table headers, neutral controls) */
-  --sunken: oklch(96.5% 0.004 275);
-  --control: oklch(95.5% 0.005 275);
-  --control-hover: oklch(92.5% 0.006 275);
-  --control-active: oklch(90% 0.007 275);
-  --row-hover: oklch(30% 0.02 275 / 0.045);
+  --sunken: oklch(96.5% 0.01 80);
+  --control: oklch(95% 0.012 80);
+  --control-hover: oklch(92% 0.014 80);
+  --control-active: oklch(89% 0.016 80);
+  --row-hover: oklch(30% 0.02 80 / 0.05);
 
-  /* Neutral text ramp — hue 275 */
-  --text: oklch(23% 0.016 275);
-  --text-secondary: oklch(47% 0.014 275);
-  --text-muted: oklch(58% 0.012 275);
-  --text-disabled: oklch(72% 0.008 275);
+  /* Neutral text ramp — warm hue 80, matches the cream surfaces */
+  --text: oklch(24% 0.02 80);
+  --text-secondary: oklch(46% 0.02 80);
+  --text-muted: oklch(58% 0.016 80);
+  --text-disabled: oklch(72% 0.012 80);
 
   /* The single permitted hairline (6–8% opacity) */
-  --hairline: oklch(30% 0.02 275 / 0.07);
+  --hairline: oklch(30% 0.02 80 / 0.08);
 
-  /* Accent — Carus Law warm gold/brass */
-  --accent: oklch(52% 0.1 75);
-  --accent-hover: oklch(47% 0.1 75);
-  --accent-active: oklch(43% 0.095 75);
-  --accent-on: oklch(99% 0.008 75);
-  --accent-soft: oklch(52% 0.1 75 / 0.1);
-  --accent-soft-strong: oklch(52% 0.1 75 / 0.16);
-  --accent-text: oklch(42% 0.095 75);
+  /* Accent — deep wine red */
+  --accent: oklch(38% 0.13 20);
+  --accent-hover: oklch(33% 0.13 20);
+  --accent-active: oklch(29% 0.12 20);
+  --accent-on: oklch(98% 0.01 20);
+  --accent-soft: oklch(38% 0.13 20 / 0.1);
+  --accent-soft-strong: oklch(38% 0.13 20 / 0.16);
+  --accent-text: oklch(34% 0.13 20);
 
   /* Shadows — tinted with the background hue, never pure black */
-  --shadow-tint: 24 21 38;
+  --shadow-tint: 56 40 28;
   --shadow-subtle:
     0 1px 2px rgb(var(--shadow-tint) / 0.06),
     0 2px 8px rgb(var(--shadow-tint) / 0.04);
@@ -97,20 +98,20 @@
     --control-active: #32323c;
     --row-hover: oklch(100% 0 0 / 0.045);
 
-    --text: oklch(96% 0.005 275);
-    --text-secondary: oklch(73% 0.011 275);
-    --text-muted: oklch(61% 0.012 275);
-    --text-disabled: oklch(46% 0.012 275);
+    --text: oklch(96% 0.008 80);
+    --text-secondary: oklch(73% 0.014 80);
+    --text-muted: oklch(61% 0.014 80);
+    --text-disabled: oklch(46% 0.012 80);
 
     --hairline: oklch(100% 0 0 / 0.07);
 
-    --accent: oklch(70% 0.11 75);
-    --accent-hover: oklch(75% 0.11 75);
-    --accent-active: oklch(66% 0.11 75);
-    --accent-on: oklch(20% 0.03 75);
-    --accent-soft: oklch(70% 0.11 75 / 0.12);
-    --accent-soft-strong: oklch(70% 0.11 75 / 0.2);
-    --accent-text: oklch(78% 0.1 75);
+    --accent: oklch(62% 0.15 20);
+    --accent-hover: oklch(67% 0.15 20);
+    --accent-active: oklch(58% 0.15 20);
+    --accent-on: oklch(15% 0.02 20);
+    --accent-soft: oklch(62% 0.15 20 / 0.14);
+    --accent-soft-strong: oklch(62% 0.15 20 / 0.22);
+    --accent-text: oklch(75% 0.13 20);
 
     --shadow-tint: 4 4 7;
     --shadow-subtle:
@@ -135,20 +136,20 @@
   --control-active: #32323c;
   --row-hover: oklch(100% 0 0 / 0.045);
 
-  --text: oklch(96% 0.005 275);
-  --text-secondary: oklch(73% 0.011 275);
-  --text-muted: oklch(61% 0.012 275);
-  --text-disabled: oklch(46% 0.012 275);
+  --text: oklch(96% 0.008 80);
+  --text-secondary: oklch(73% 0.014 80);
+  --text-muted: oklch(61% 0.014 80);
+  --text-disabled: oklch(46% 0.012 80);
 
   --hairline: oklch(100% 0 0 / 0.07);
 
-  --accent: oklch(70% 0.11 75);
-  --accent-hover: oklch(75% 0.11 75);
-  --accent-active: oklch(66% 0.11 75);
-  --accent-on: oklch(20% 0.03 75);
-  --accent-soft: oklch(70% 0.11 75 / 0.12);
-  --accent-soft-strong: oklch(70% 0.11 75 / 0.2);
-  --accent-text: oklch(78% 0.1 75);
+  --accent: oklch(62% 0.15 20);
+  --accent-hover: oklch(67% 0.15 20);
+  --accent-active: oklch(58% 0.15 20);
+  --accent-on: oklch(15% 0.02 20);
+  --accent-soft: oklch(62% 0.15 20 / 0.14);
+  --accent-soft-strong: oklch(62% 0.15 20 / 0.22);
+  --accent-text: oklch(75% 0.13 20);
 
   --shadow-tint: 4 4 7;
   --shadow-subtle:
