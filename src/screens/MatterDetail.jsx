@@ -21,6 +21,9 @@ export function MatterDetail() {
       <p>Número de caso: {matter.caseNumber || 'Sin número'}</p>
       <p>Tarifa: {matter.rate ?? 'N/A'}</p>
       <h2>Entradas</h2>
+      <p>
+        Para editar o eliminar una entrada, ve a <Link to="/review">Revisión diaria</Link>.
+      </p>
       <ul>
         {matterEntries.map((e) => (
           <li key={e.id}>

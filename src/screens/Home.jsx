@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useData } from '../context/DataContext.jsx';
 import { parsePastedText } from '../lib/parser.js';
+import { EntryFormFields } from '../components/EntryFormFields.jsx';
 
 const EMPTY_FORM = { matterId: '', date: '', task: '', detailDescription: '', timeSpent: '', costAssociated: '' };
 
@@ -24,13 +25,25 @@ export function Home() {
   }
 
   function handleParse() {
-    setCandidates(parsePastedText(pastedText, matters));
+    setCandidates(
+      parsePastedText(pastedText, matters).map((c) => ({
+        ...c,
+        matterId: c.matterId || '',
+        date: c.date || '',
+        costAssociated: '',
+      }))
+    );
+  }
+
+  function updateCandidate(index, next) {
+    setCandidates((prev) => prev.map((c, i) => (i === index ? next : c)));
   }
 
   function confirmCandidate(index) {
     const candidate = candidates[index];
+    if (!isCandidateComplete(candidate)) return;
     addEntry({
-      matterId: candidate.matterId || '',
+      matterId: candidate.matterId,
       date: candidate.date,
       task: candidate.task,
       detailDescription: candidate.detailDescription,
@@ -54,29 +67,7 @@ export function Home() {
 
       {mode === 'manual' && (
         <form onSubmit={handleManualSubmit}>
-          <select aria-label="Matter" value={form.matterId} onChange={(e) => setForm({ ...form, matterId: e.target.value })}>
-            <option value="">Selecciona matter</option>
-            {matters.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-          <input aria-label="Fecha" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-          <input aria-label="Task" value={form.task} onChange={(e) => setForm({ ...form, task: e.target.value })} placeholder="Task" />
-          <textarea
-            aria-label="Detalle"
-            value={form.detailDescription}
-            onChange={(e) => setForm({ ...form, detailDescription: e.target.value })}
-            placeholder="Detalle"
-          />
-          <input aria-label="Tiempo" value={form.timeSpent} onChange={(e) => setForm({ ...form, timeSpent: e.target.value })} placeholder="Tiempo (ej. 10 min)" />
-          <input
-            aria-label="Costo"
-            value={form.costAssociated}
-            onChange={(e) => setForm({ ...form, costAssociated: e.target.value })}
-            placeholder="Costo"
-          />
+          <EntryFormFields value={form} matters={matters} onChange={setForm} />
           <button type="button" onClick={handleRepeatLast}>
             Repetir última tarea
           </button>
@@ -94,26 +85,31 @@ export function Home() {
           />
           <button onClick={handleParse}>Analizar texto</button>
           <ul>
-            {candidates.map((c, i) => (
-              <li key={i}>
-                <input
-                  aria-label={`Task sugerido ${i}`}
-                  value={c.task}
-                  onChange={(e) => {
-                    const next = [...candidates];
-                    next[i] = { ...c, task: e.target.value };
-                    setCandidates(next);
-                  }}
-                />
-                <span>
-                  {c.date || 'sin fecha'} — {c.timeSpent || 'sin tiempo'}
-                </span>
-                <button onClick={() => confirmCandidate(i)}>Confirmar</button>
-              </li>
-            ))}
+            {candidates.map((c, i) => {
+              const complete = isCandidateComplete(c);
+              return (
+                <li key={i}>
+                  <EntryFormFields
+                    value={c}
+                    matters={matters}
+                    onChange={(next) => updateCandidate(i, next)}
+                    labelFor={(base) => `${base} sugerido ${i}`}
+                    showCost={false}
+                  />
+                  {!complete && <p role="alert">Falta la fecha o el matter para poder confirmar esta entrada.</p>}
+                  <button onClick={() => confirmCandidate(i)} disabled={!complete}>
+                    Confirmar
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
     </div>
   );
+}
+
+function isCandidateComplete(candidate) {
+  return Boolean(candidate && candidate.date && candidate.matterId);
 }
