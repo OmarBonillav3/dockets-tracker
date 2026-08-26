@@ -20,22 +20,26 @@ export function Search() {
   });
 
   return (
-    <div>
-      <h1>Buscar</h1>
-      <input aria-label="Palabra clave" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="Palabra clave" />
-      <select aria-label="Matter" value={matterId} onChange={(e) => setMatterId(e.target.value)}>
-        <option value="">Todos los matters</option>
-        {matters.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.name}
-          </option>
-        ))}
-      </select>
-      <input aria-label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-      <input aria-label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-      <ul>
+    <div className="screen">
+      <h1 className="screen__title">Buscar</h1>
+      <div className="card">
+        <div className="filter-bar">
+          <input className="input" aria-label="Palabra clave" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="Palabra clave" />
+          <select className="select" aria-label="Matter" value={matterId} onChange={(e) => setMatterId(e.target.value)}>
+            <option value="">Todos los matters</option>
+            {matters.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+          <input className="input" aria-label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <input className="input" aria-label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        </div>
+      </div>
+      <ul className="card rows">
         {results.map((e) => (
-          <li key={e.id}>
+          <li className="row row__meta" key={e.id}>
             {e.date} — {e.task}
           </li>
         ))}
