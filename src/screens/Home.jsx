@@ -54,52 +54,81 @@ export function Home() {
   }
 
   return (
-    <div>
-      <h1>Captura rápida</h1>
-      <div>
-        <button onClick={() => setMode('manual')} aria-pressed={mode === 'manual'}>
+    <div className="screen">
+      <h1 className="screen__title">Captura rápida</h1>
+      <div className="segmented">
+        <button
+          className="segmented__btn"
+          onClick={() => setMode('manual')}
+          aria-pressed={mode === 'manual'}
+        >
           Formulario manual
         </button>
-        <button onClick={() => setMode('paste')} aria-pressed={mode === 'paste'}>
+        <button
+          className="segmented__btn"
+          onClick={() => setMode('paste')}
+          aria-pressed={mode === 'paste'}
+        >
           Pegar texto
         </button>
       </div>
 
       {mode === 'manual' && (
-        <form onSubmit={handleManualSubmit}>
-          <EntryFormFields value={form} matters={matters} onChange={setForm} />
-          <button type="button" onClick={handleRepeatLast}>
-            Repetir última tarea
-          </button>
-          <button type="submit">Guardar</button>
+        <form className="card" onSubmit={handleManualSubmit}>
+          <div className="field-grid">
+            <EntryFormFields value={form} matters={matters} onChange={setForm} />
+            <div className="form-actions">
+              <button className="btn btn--ghost" type="button" onClick={handleRepeatLast}>
+                Repetir última tarea
+              </button>
+              <button className="btn btn--primary" type="submit">Guardar</button>
+            </div>
+          </div>
         </form>
       )}
 
       {mode === 'paste' && (
-        <div>
-          <textarea
-            aria-label="Texto a pegar"
-            value={pastedText}
-            onChange={(e) => setPastedText(e.target.value)}
-            placeholder="Pega tu nota, correo o mensaje"
-          />
-          <button onClick={handleParse}>Analizar texto</button>
-          <ul>
+        <div className="stack--lg stack">
+          <div className="card">
+            <textarea
+              className="textarea"
+              aria-label="Texto a pegar"
+              value={pastedText}
+              onChange={(e) => setPastedText(e.target.value)}
+              placeholder="Pega tu nota, correo o mensaje"
+            />
+            <div className="btn-row btn-row--end">
+              <button className="btn btn--primary" onClick={handleParse}>Analizar texto</button>
+            </div>
+          </div>
+          <ul className="stack">
             {candidates.map((c, i) => {
               const complete = isCandidateComplete(c);
               return (
-                <li key={i}>
-                  <EntryFormFields
-                    value={c}
-                    matters={matters}
-                    onChange={(next) => updateCandidate(i, next)}
-                    labelFor={(base) => `${base} sugerido ${i}`}
-                    showCost={false}
-                  />
-                  {!complete && <p role="alert">Falta la fecha o el matter para poder confirmar esta entrada.</p>}
-                  <button onClick={() => confirmCandidate(i)} disabled={!complete}>
-                    Confirmar
-                  </button>
+                <li className="card card--elevated" key={i}>
+                  <div className="field-grid">
+                    <EntryFormFields
+                      value={c}
+                      matters={matters}
+                      onChange={(next) => updateCandidate(i, next)}
+                      labelFor={(base) => `${base} sugerido ${i}`}
+                      showCost={false}
+                    />
+                  </div>
+                  {!complete && (
+                    <p className="alert alert--inline" role="alert">
+                      Falta la fecha o el matter para poder confirmar esta entrada.
+                    </p>
+                  )}
+                  <div className="btn-row btn-row--end">
+                    <button
+                      className="btn btn--primary"
+                      onClick={() => confirmCandidate(i)}
+                      disabled={!complete}
+                    >
+                      Confirmar
+                    </button>
+                  </div>
                 </li>
               );
             })}
