@@ -32,11 +32,27 @@ describe('getAllDatesInMonth', () => {
 });
 
 describe('findEmptyDays', () => {
-  test('returns days in the month with no entries', () => {
+  test('for a fully-elapsed past month, returns every day in the month with no entries', () => {
     const entries = [entry({ date: '2026-07-01' })];
-    const emptyDays = findEmptyDays(entries, 2026, 6);
+    const today = new Date('2026-08-26T12:00:00');
+    const emptyDays = findEmptyDays(entries, 2026, 6, today);
     expect(emptyDays).toHaveLength(30);
     expect(emptyDays).not.toContain('2026-07-01');
     expect(emptyDays).toContain('2026-07-02');
+  });
+
+  test('for the current month, stops at today instead of listing days that have not happened yet', () => {
+    const entries = [];
+    const today = new Date('2026-08-05T12:00:00');
+    const emptyDays = findEmptyDays(entries, 2026, 7, today);
+    expect(emptyDays).toHaveLength(5);
+    expect(emptyDays).toEqual(['2026-08-01', '2026-08-02', '2026-08-03', '2026-08-04', '2026-08-05']);
+    expect(emptyDays).not.toContain('2026-08-06');
+  });
+
+  test('for a future month, returns nothing — none of it has happened yet', () => {
+    const today = new Date('2026-08-05T12:00:00');
+    const emptyDays = findEmptyDays([], 2026, 8, today);
+    expect(emptyDays).toEqual([]);
   });
 });

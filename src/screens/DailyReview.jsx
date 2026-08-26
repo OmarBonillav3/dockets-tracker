@@ -46,9 +46,20 @@ export function DailyReview() {
     <div className="screen">
       <h1 className="screen__title">Revisión diaria</h1>
       {emptyDays.length > 0 && (
-        <p className="alert alert--card" role="alert">
-          Días sin registros este mes: {emptyDays.join(', ')}
-        </p>
+        <div className="alert alert--card" role="alert">
+          <div>
+            <p className="empty-days__title">
+              <strong>{emptyDays.length}</strong> día{emptyDays.length === 1 ? '' : 's'} sin registros este mes
+            </p>
+            <div className="chip-row">
+              {emptyDays.map((d) => (
+                <span className="chip" key={d}>
+                  {Number(d.slice(-2))}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
       {dates.map((date) => (
         <section className="card" key={date}>

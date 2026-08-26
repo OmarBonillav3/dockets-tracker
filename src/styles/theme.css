@@ -890,6 +890,18 @@ textarea {
   color: var(--accent-text);
 }
 
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--sp-2);
+}
+
+.empty-days__title {
+  font-size: 13px;
+  color: var(--text);
+}
+
 /* --------------------------------------------------------------------------
    12. Alerts / attention banners — elevated, accent-tinted, never harsh red
    -------------------------------------------------------------------------- */
