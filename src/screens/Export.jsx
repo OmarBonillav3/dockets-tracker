@@ -33,14 +33,18 @@ export function Export() {
   }
 
   return (
-    <div>
-      <h1>Exportar</h1>
+    <div className="screen">
+      <h1 className="screen__title">Exportar</h1>
       <MonthPicker year={year} month={month} onChange={setPeriod} />
-      <p>{monthEntries.length} entradas confirmadas listas para exportar.</p>
-      <button onClick={handleExport}>Generar docket (.docx)</button>
-      {status === 'generating' && <p>Generando...</p>}
-      {status === 'done' && <p>Listo, descarga iniciada.</p>}
-      {errorMessage && <p role="alert">{errorMessage}</p>}
+      <div className="card">
+        <p className="muted num">{monthEntries.length} entradas confirmadas listas para exportar.</p>
+        <div className="btn-row">
+          <button className="btn btn--primary" onClick={handleExport}>Generar docket (.docx)</button>
+        </div>
+        {status === 'generating' && <p className="note">Generando...</p>}
+        {status === 'done' && <p className="note">Listo, descarga iniciada.</p>}
+      </div>
+      {errorMessage && <p className="alert alert--card" role="alert">{errorMessage}</p>}
     </div>
   );
 }
