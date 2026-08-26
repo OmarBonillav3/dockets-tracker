@@ -54,19 +54,25 @@ export function Settings() {
   }
 
   return (
-    <div>
-      <h1>Configuración</h1>
-      <button onClick={handleExportBackup}>Exportar respaldo (JSON)</button>
-      <input type="file" accept="application/json" onChange={handleFileSelected} aria-label="Importar respaldo" />
+    <div className="screen">
+      <h1 className="screen__title">Configuración</h1>
+      <div className="card">
+        <div className="btn-row">
+          <button className="btn btn--primary" onClick={handleExportBackup}>Exportar respaldo (JSON)</button>
+        </div>
+        <input className="file-input" type="file" accept="application/json" onChange={handleFileSelected} aria-label="Importar respaldo" />
+      </div>
       {pendingFile && (
-        <div>
-          <p>Archivo seleccionado: {pendingFile.name}</p>
-          <p role="alert">¿Confirmas importar? Esto reemplaza todos tus datos actuales.</p>
-          <button onClick={handleConfirmImport}>Confirmar importación</button>
-          <button onClick={cancelImport}>Cancelar importación</button>
+        <div className="card card--elevated">
+          <p className="muted">Archivo seleccionado: {pendingFile.name}</p>
+          <p className="alert alert--inline" role="alert">¿Confirmas importar? Esto reemplaza todos tus datos actuales.</p>
+          <div className="btn-row btn-row--end">
+            <button className="btn btn--ghost" onClick={cancelImport}>Cancelar importación</button>
+            <button className="btn btn--primary" onClick={handleConfirmImport}>Confirmar importación</button>
+          </div>
         </div>
       )}
-      {errorMessage && <p role="alert">{errorMessage}</p>}
+      {errorMessage && <p className="alert alert--card" role="alert">{errorMessage}</p>}
     </div>
   );
 }
