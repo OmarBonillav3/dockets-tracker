@@ -961,6 +961,39 @@ textarea {
    14. Responsive
    -------------------------------------------------------------------------- */
 
+/* Mobile nav bar (brand + hamburger toggle) — hidden on desktop, where the
+   sidebar nav already shows every link at once. */
+.nav__bar {
+  display: none;
+}
+
+.nav__toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: var(--r-control);
+  background: var(--control);
+  cursor: pointer;
+  transition: background-color var(--t);
+}
+
+.nav__toggle:hover {
+  background: var(--control-hover);
+}
+
+.nav__toggle-bar {
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+}
+
 @media (max-width: 860px) {
   .app-shell {
     flex-direction: column;
@@ -970,17 +1003,34 @@ textarea {
     width: 100%;
     flex: 0 0 auto;
     height: auto;
-    position: static;
-    padding: var(--sp-4);
-    flex-direction: row;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    align-self: stretch;
+    padding: 0;
+    gap: 0;
+  }
+
+  .nav__bar {
+    display: flex;
     align-items: center;
-    gap: var(--sp-4);
-    overflow-x: auto;
+    justify-content: space-between;
+    padding: var(--sp-4);
   }
 
   .nav__list {
-    flex-direction: row;
-    gap: var(--sp-1);
+    flex-direction: column;
+    gap: 2px;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 var(--sp-3);
+    transition: max-height var(--t), padding var(--t);
+  }
+
+  .nav__list--open {
+    max-height: 420px;
+    padding: 0 var(--sp-3) var(--sp-4);
+    overflow-y: auto;
   }
 
   .app-main {
@@ -989,6 +1039,30 @@ textarea {
 
   .field-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Rows (Matters, Daily Review entries): stack the content above its
+     actions instead of squeezing both onto one line — a chip + three
+     buttons next to a wrapped title has no room to breathe at phone
+     widths. */
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+  }
+
+  .row__actions {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .screen__title {
+    font-size: 24px;
+  }
+
+  .btn-row {
+    flex-wrap: wrap;
   }
 }
 
