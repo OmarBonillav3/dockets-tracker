@@ -1,6 +1,7 @@
-import { Document, Packer, Table, TableRow, TableCell, Paragraph, TextRun } from 'docx';
+import JSZip from 'jszip';
 
-const HEADERS = ['Matter name', 'Date', 'Task', 'Detail Description', 'Time Spent', 'Cost Associated'];
+const DOCUMENT_XML_PATH = 'word/document.xml';
+const DEFAULT_TEMPLATE_URL = '/docket-template.docx';
 
 export function entriesToRows(entries, matters) {
   const matterById = Object.fromEntries(matters.map((m) => [m.id, m]));
@@ -13,33 +14,72 @@ export function entriesToRows(entries, matters) {
     });
 }
 
-function textCell(text) {
-  return new TableCell({ children: [new Paragraph(String(text ?? ''))] });
+/**
+ * The bundled template (public/docket-template.docx) is Carus Law's real
+ * template file, stripped down to its header row plus exactly one
+ * formatting-only row: this function clones that second row once per docket
+ * entry, filling in its 6 cells in place, so the exported file keeps the
+ * template's real fonts, borders and logo untouched.
+ */
+export function fillTemplateDocumentXml(templateXmlString, rows) {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(templateXmlString, 'application/xml');
+
+  const parserError = xmlDoc.getElementsByTagName('parsererror')[0];
+  if (parserError) {
+    throw new Error('La plantilla del docket no se pudo leer: XML inválido.');
+  }
+
+  const table = xmlDoc.getElementsByTagName('w:tbl')[0];
+  if (!table) {
+    throw new Error('La plantilla del docket no tiene la tabla esperada.');
+  }
+
+  const rowNodes = Array.from(table.childNodes).filter((node) => node.nodeName === 'w:tr');
+  if (rowNodes.length < 2) {
+    throw new Error('La plantilla del docket no tiene la fila de formato esperada.');
+  }
+  const templateRow = rowNodes[1];
+
+  for (const rowValues of rows) {
+    const clone = templateRow.cloneNode(true);
+    const cells = Array.from(clone.getElementsByTagName('w:tc'));
+    cells.forEach((cell, i) => {
+      const textNode = cell.getElementsByTagName('w:t')[0];
+      if (textNode) {
+        textNode.textContent = String(rowValues[i] ?? '');
+      }
+    });
+    table.insertBefore(clone, templateRow);
+  }
+  table.removeChild(templateRow);
+
+  return new XMLSerializer().serializeToString(xmlDoc);
 }
 
-function buildTable(rows) {
-  const headerRow = new TableRow({ children: HEADERS.map((h) => textCell(h)) });
-  const dataRows = rows.map((row) => new TableRow({ children: row.map((cell) => textCell(cell)) }));
-  return new Table({ rows: [headerRow, ...dataRows] });
-}
-
-export function buildDocketDocument({ firmName, entries, matters }) {
+export async function buildDocketZipBlob({ entries, matters, templateArrayBuffer }) {
   const rows = entriesToRows(entries, matters);
-  return new Document({
-    sections: [
-      {
-        children: [
-          new Paragraph({ children: [new TextRun({ text: firmName, bold: true, size: 32 })] }),
-          buildTable(rows),
-        ],
-      },
-    ],
+  const zip = await JSZip.loadAsync(templateArrayBuffer);
+  const documentXmlFile = zip.file(DOCUMENT_XML_PATH);
+  if (!documentXmlFile) {
+    throw new Error('La plantilla del docket no contiene word/document.xml.');
+  }
+  const originalXml = await documentXmlFile.async('string');
+  const filledXml = fillTemplateDocumentXml(originalXml, rows);
+  zip.file(DOCUMENT_XML_PATH, filledXml);
+  return zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 }
 
-export async function exportDocketToFile({ firmName, entries, matters, filename }) {
-  const doc = buildDocketDocument({ firmName, entries, matters });
-  const blob = await Packer.toBlob(doc);
+export async function exportDocketToFile({ entries, matters, filename, templateUrl = DEFAULT_TEMPLATE_URL }) {
+  const response = await fetch(templateUrl);
+  if (!response.ok) {
+    throw new Error('No se pudo cargar la plantilla del docket.');
+  }
+  const templateArrayBuffer = await response.arrayBuffer();
+  const blob = await buildDocketZipBlob({ entries, matters, templateArrayBuffer });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
