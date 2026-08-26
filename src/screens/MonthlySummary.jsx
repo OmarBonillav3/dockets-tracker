@@ -37,42 +37,48 @@ export function MonthlySummary() {
     .filter((row) => row.hours > 0 || row.cost > 0);
 
   return (
-    <div>
-      <h1>Resumen mensual</h1>
+    <div className="screen">
+      <h1 className="screen__title">Resumen mensual</h1>
       <MonthPicker year={year} month={month} onChange={setPeriod} />
-      <p>Totales de entradas confirmadas únicamente.</p>
-      <p>Total horas: {totalHours.toFixed(2)}</p>
-      <p>Total costo: {totalCost.toFixed(2)}</p>
+      <p className="muted">Totales de entradas confirmadas únicamente.</p>
+      <div className="stat-row">
+        <p className="stat-card">Total horas: {totalHours.toFixed(2)}</p>
+        <p className="stat-card">Total costo: {totalCost.toFixed(2)}</p>
+      </div>
       {unconfirmedCount > 0 && (
-        <p role="alert">
+        <p className="alert alert--card" role="alert">
           {unconfirmedCount} entradas sin confirmar este mes. No están incluidas en los totales; confírmalas en
           Revisión diaria antes de exportar.
         </p>
       )}
       {badTimeCount > 0 && (
-        <p role="alert">{badTimeCount} entradas con tiempo no reconocido (cuentan como 0 horas).</p>
+        <p className="alert alert--inline" role="alert">{badTimeCount} entradas con tiempo no reconocido (cuentan como 0 horas).</p>
       )}
       {badCostCount > 0 && (
-        <p role="alert">{badCostCount} entradas con costo no reconocido (cuentan como 0).</p>
+        <p className="alert alert--inline" role="alert">{badCostCount} entradas con costo no reconocido (cuentan como 0).</p>
       )}
-      <table>
-        <thead>
-          <tr>
-            <th>Matter</th>
-            <th>Horas</th>
-            <th>Costo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {byMatter.map((row) => (
-            <tr key={row.matter.id}>
-              <td>{row.matter.name}</td>
-              <td>{row.hours.toFixed(2)}</td>
-              <td>{row.cost.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="card">
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Matter</th>
+                <th className="num">Horas</th>
+                <th className="num">Costo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byMatter.map((row) => (
+                <tr key={row.matter.id}>
+                  <td>{row.matter.name}</td>
+                  <td className="num">{row.hours.toFixed(2)}</td>
+                  <td className="num">{row.cost.toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
