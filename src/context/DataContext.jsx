@@ -10,14 +10,33 @@ function makeId() {
 export function DataProvider({ children }) {
   const [matters, setMatters] = useState(() => loadMatters());
   const [entries, setEntries] = useState(() => loadEntries());
+  const [mattersSaveFailed, setMattersSaveFailed] = useState(false);
+  const [entriesSaveFailed, setEntriesSaveFailed] = useState(false);
 
   useEffect(() => {
-    saveMatters(matters);
+    try {
+      saveMatters(matters);
+      setMattersSaveFailed(false);
+    } catch (error) {
+      console.error('dockets: no se pudo guardar los matters.', error);
+      setMattersSaveFailed(true);
+    }
   }, [matters]);
 
   useEffect(() => {
-    saveEntries(entries);
+    try {
+      saveEntries(entries);
+      setEntriesSaveFailed(false);
+    } catch (error) {
+      console.error('dockets: no se pudo guardar las entradas.', error);
+      setEntriesSaveFailed(true);
+    }
   }, [entries]);
+
+  const saveError =
+    mattersSaveFailed || entriesSaveFailed
+      ? 'No se pudo guardar en este dispositivo. Es posible que tu último cambio no se haya guardado. Revisa el espacio disponible del navegador o desactiva el modo privado.'
+      : null;
 
   const addMatter = useCallback((matter) => {
     setMatters((prev) => [...prev, { ...matter, id: makeId() }]);
@@ -64,9 +83,15 @@ export function DataProvider({ children }) {
     deleteEntry,
     confirmEntry,
     confirmDay,
+    saveError,
   };
 
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
+  return (
+    <DataContext.Provider value={value}>
+      {saveError && <p role="alert">{saveError}</p>}
+      {children}
+    </DataContext.Provider>
+  );
 }
 
 export function useData() {

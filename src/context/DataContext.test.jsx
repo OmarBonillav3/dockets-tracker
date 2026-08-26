@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DataProvider, useData } from './DataContext.jsx';
 
@@ -7,7 +7,7 @@ beforeEach(() => {
 });
 
 function TestConsumer() {
-  const { matters, entries, addMatter, addEntry, confirmEntry, confirmDay } = useData();
+  const { matters, entries, addMatter, addEntry, confirmEntry, confirmDay, updateEntry, deleteEntry } = useData();
   const nonSeedMatters = matters.filter((m) => !m.isPotentialClient);
   return (
     <div>
@@ -26,6 +26,9 @@ function TestConsumer() {
       {entries.map((e) => (
         <div key={e.id}>
           <span data-testid={`status-${e.id}`}>{e.status}</span>
+          <span data-testid="entry-task">{e.task}</span>
+          <button data-testid="update-entry" onClick={() => updateEntry(e.id, { task: 'editada' })}>update</button>
+          <button data-testid="delete-entry" onClick={() => deleteEntry(e.id)}>delete</button>
           <button data-testid="confirm-entry" onClick={() => confirmEntry(e.id)}>confirm {e.id}</button>
           <button data-testid="confirm-day" onClick={() => confirmDay(e.date)}>confirm day {e.date}</button>
         </div>
@@ -61,5 +64,43 @@ describe('DataContext', () => {
     fireEvent.click(screen.getByText('add entry'));
     fireEvent.click(screen.getByText(/^confirm day/));
     expect(screen.getByText(/confirmed/)).toBeInTheDocument();
+  });
+
+  test('updateEntry replaces the given fields', () => {
+    render(<DataProvider><TestConsumer /></DataProvider>);
+    fireEvent.click(screen.getByText('add entry'));
+    fireEvent.click(screen.getByTestId('update-entry'));
+    expect(screen.getByTestId('entry-task').textContent).toBe('editada');
+  });
+
+  test('deleteEntry removes the entry', () => {
+    render(<DataProvider><TestConsumer /></DataProvider>);
+    fireEvent.click(screen.getByText('add entry'));
+    fireEvent.click(screen.getByTestId('delete-entry'));
+    expect(screen.getByTestId('entry-count').textContent).toBe('0');
+  });
+});
+
+describe('DataContext save failures', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('shows a Spanish alert banner when persisting fails', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    render(<DataProvider><TestConsumer /></DataProvider>);
+    fireEvent.click(screen.getByText('add entry'));
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/no se pudo guardar/i);
+    expect(alert).toHaveTextContent(/no se haya guardado/i);
+  });
+
+  test('renders no banner when persisting succeeds', () => {
+    render(<DataProvider><TestConsumer /></DataProvider>);
+    fireEvent.click(screen.getByText('add entry'));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

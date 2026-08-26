@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   loadMatters,
   saveMatters,
@@ -21,11 +21,54 @@ describe('loadMatters', () => {
     expect(matters[0].isPotentialClient).toBe(true);
   });
 
-  test('returns previously saved matters without re-seeding', () => {
+  test('returns previously saved matters without duplicating the seed', () => {
+    saveMatters([
+      { id: POTENTIAL_CLIENT_MATTER_ID, name: 'Sin número / Cliente potencial', caseNumber: '', rate: null, isPotentialClient: true },
+      { id: 'm1', name: 'Test Matter', caseNumber: '001', rate: 100, isPotentialClient: false },
+    ]);
+    const matters = loadMatters();
+    expect(matters).toHaveLength(2);
+    expect(matters.filter((m) => m.id === POTENTIAL_CLIENT_MATTER_ID)).toHaveLength(1);
+    expect(matters.some((m) => m.id === 'm1')).toBe(true);
+  });
+
+  test('re-injects the potential-client matter when saved data is missing it, keeping user matters', () => {
     saveMatters([{ id: 'm1', name: 'Test Matter', caseNumber: '001', rate: 100, isPotentialClient: false }]);
     const matters = loadMatters();
+    expect(matters.some((m) => m.id === POTENTIAL_CLIENT_MATTER_ID)).toBe(true);
+    expect(matters.some((m) => m.id === 'm1')).toBe(true);
+    // and the repair is persisted
+    expect(JSON.parse(localStorage.getItem('dockets:matters')).some((m) => m.id === POTENTIAL_CLIENT_MATTER_ID)).toBe(true);
+  });
+});
+
+describe('corrupt localStorage', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('loadMatters falls back to the seed instead of throwing', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.setItem('dockets:matters', '{not json');
+    const matters = loadMatters();
     expect(matters).toHaveLength(1);
-    expect(matters[0].id).toBe('m1');
+    expect(matters[0].id).toBe(POTENTIAL_CLIENT_MATTER_ID);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  test('loadEntries falls back to an empty list instead of throwing', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.setItem('dockets:entries', 'not json at all');
+    expect(loadEntries()).toEqual([]);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  test('non-array saved values are also rejected safely', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.setItem('dockets:matters', '{"a":1}');
+    localStorage.setItem('dockets:entries', '{"a":1}');
+    expect(loadMatters()[0].id).toBe(POTENTIAL_CLIENT_MATTER_ID);
+    expect(loadEntries()).toEqual([]);
   });
 });
 
@@ -50,7 +93,8 @@ describe('backup', () => {
     localStorage.clear();
     importBackup(json);
 
-    expect(loadMatters()).toHaveLength(1);
+    expect(loadMatters().some((m) => m.id === 'm1')).toBe(true);
+    expect(loadMatters().some((m) => m.id === POTENTIAL_CLIENT_MATTER_ID)).toBe(true);
     expect(loadEntries()).toHaveLength(1);
   });
 
