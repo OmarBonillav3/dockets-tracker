@@ -1,7 +1,11 @@
 import JSZip from 'jszip';
 
 const DOCUMENT_XML_PATH = 'word/document.xml';
-const DEFAULT_TEMPLATE_URL = '/docket-template.docx';
+// Absolute root paths break once the app is hosted from a subpath (e.g.
+// GitHub Pages serves from https://user.github.io/repo-name/, not the
+// domain root) — BASE_URL is Vite's own resolved `base` config, so this
+// stays correct wherever the built app actually lives.
+const DEFAULT_TEMPLATE_URL = `${import.meta.env.BASE_URL}docket-template.docx`;
 
 export function entriesToRows(entries, matters) {
   const matterById = Object.fromEntries(matters.map((m) => [m.id, m]));

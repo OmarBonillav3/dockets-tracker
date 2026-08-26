@@ -2,7 +2,12 @@ import { entriesToRows } from '../lib/docxExport.js';
 
 const HEADERS = ['Matter name', 'Date', 'Task', 'Detail Description', 'Time Spent', 'Cost Associated'];
 
-export function DocketPreview({ entries, matters, firmName = 'Carus Law', logoUrl = '/carus-law-logo.png' }) {
+export function DocketPreview({
+  entries,
+  matters,
+  firmName = 'Carus Law',
+  logoUrl = `${import.meta.env.BASE_URL}carus-law-logo.png`,
+}) {
   const rows = entriesToRows(entries, matters);
 
   return (

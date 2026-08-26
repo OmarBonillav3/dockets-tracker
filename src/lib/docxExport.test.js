@@ -153,7 +153,7 @@ describe('exportDocketToFile', () => {
 
     await exportDocketToFile({ entries, matters, filename: 'docket-2026-07.docx' });
 
-    expect(global.fetch).toHaveBeenCalledWith('/docket-template.docx');
+    expect(global.fetch).toHaveBeenCalledWith(`${import.meta.env.BASE_URL}docket-template.docx`);
     expect(clickSpy).toHaveBeenCalled();
     expect(global.URL.createObjectURL).toHaveBeenCalled();
   });
