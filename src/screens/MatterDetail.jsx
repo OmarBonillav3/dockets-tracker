@@ -9,28 +9,34 @@ export function MatterDetail() {
 
   if (!matter) {
     return (
-      <p>
+      <p className="empty">
         Matter no encontrado. <Link to="/matters">Volver</Link>
       </p>
     );
   }
 
   return (
-    <div>
-      <h1>{matter.name}</h1>
-      <p>Número de caso: {matter.caseNumber || 'Sin número'}</p>
-      <p>Tarifa: {matter.rate ?? 'N/A'}</p>
-      <h2>Entradas</h2>
-      <p>
-        Para editar o eliminar una entrada, ve a <Link to="/review">Revisión diaria</Link>.
-      </p>
-      <ul>
-        {matterEntries.map((e) => (
-          <li key={e.id}>
-            {e.date} — {e.task} ({e.timeSpent})
-          </li>
-        ))}
-      </ul>
+    <div className="screen">
+      <h1 className="screen__title">{matter.name}</h1>
+      <div className="card card--tight">
+        <p className="muted num">Número de caso: {matter.caseNumber || 'Sin número'}</p>
+        <p className="muted num">Tarifa: {matter.rate ?? 'N/A'}</p>
+      </div>
+      <div className="card">
+        <div className="card__header">
+          <h2 className="section-title">Entradas</h2>
+        </div>
+        <p className="note">
+          Para editar o eliminar una entrada, ve a <Link className="row__link" to="/review">Revisión diaria</Link>.
+        </p>
+        <ul className="rows">
+          {matterEntries.map((e) => (
+            <li className="row row__meta" key={e.id}>
+              {e.date} — {e.task} ({e.timeSpent})
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
