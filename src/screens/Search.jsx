@@ -33,8 +33,14 @@ export function Search() {
               </option>
             ))}
           </select>
-          <input className="input" aria-label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-          <input className="input" aria-label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <div className="field">
+            <span className="field-label" aria-hidden="true">Desde</span>
+            <input className="input" aria-label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="field">
+            <span className="field-label" aria-hidden="true">Hasta</span>
+            <input className="input" aria-label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
         </div>
       </div>
       <ul className="card rows">

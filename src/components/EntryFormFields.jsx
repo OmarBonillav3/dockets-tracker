@@ -19,13 +19,23 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
         value={value.matterId || ''}
         onChange={(matterId) => set({ matterId })}
       />
-      <input
-        className="input"
-        aria-label={labelFor('Fecha')}
-        type="date"
-        value={value.date || ''}
-        onChange={(e) => set({ date: e.target.value })}
-      />
+      <div className="field">
+        {/* Native date inputs' own empty-state hint ("dd/mm/aaaa") is a
+            browser feature, not something we control — desktop Chrome shows
+            it, Android Chrome doesn't, leaving the field looking blank with
+            no clue what it's for. A visible caption fixes that everywhere,
+            regardless of platform. */}
+        <span className="field-label" aria-hidden="true">
+          {labelFor('Fecha')}
+        </span>
+        <input
+          className="input"
+          aria-label={labelFor('Fecha')}
+          type="date"
+          value={value.date || ''}
+          onChange={(e) => set({ date: e.target.value })}
+        />
+      </div>
       <input
         className="input"
         aria-label={labelFor('Task')}

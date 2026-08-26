@@ -691,6 +691,23 @@ textarea {
   gap: var(--gap);
 }
 
+/* Wraps a field that needs a visible caption instead of relying on a
+   placeholder — native date inputs' empty-state hint is a browser feature
+   (shown on desktop Chrome, not on Android Chrome), so date fields can't
+   rely on it to say what they're for. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 0 2px;
+}
+
 .inline-fields {
   display: flex;
   gap: var(--gap);
