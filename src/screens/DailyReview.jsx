@@ -43,28 +43,56 @@ export function DailyReview() {
   }
 
   return (
-    <div>
-      <h1>Revisión diaria</h1>
-      {emptyDays.length > 0 && <p role="alert">Días sin registros este mes: {emptyDays.join(', ')}</p>}
+    <div className="screen">
+      <h1 className="screen__title">Revisión diaria</h1>
+      {emptyDays.length > 0 && (
+        <p className="alert alert--card" role="alert">
+          Días sin registros este mes: {emptyDays.join(', ')}
+        </p>
+      )}
       {dates.map((date) => (
-        <section key={date}>
-          <h2>{date}</h2>
-          <button onClick={() => confirmDay(date)}>Confirmar todo el día</button>
-          <ul>
+        <section className="card" key={date}>
+          <div className="card__header">
+            <h2 className="day-card__date">{date}</h2>
+            <button className="btn btn--sm" onClick={() => confirmDay(date)}>
+              Confirmar todo el día
+            </button>
+          </div>
+          <ul className="rows">
             {grouped[date].map((e) => (
-              <li key={e.id}>
+              <li className={editingId === e.id ? 'row row--editing' : 'row'} key={e.id}>
                 {editingId === e.id ? (
-                  <div>
-                    <EntryFormFields value={draft} matters={matters} onChange={setDraft} />
-                    <button onClick={saveEdit}>Guardar</button>
-                    <button onClick={cancelEdit}>Cancelar</button>
+                  <div className="stack">
+                    <div className="field-grid">
+                      <EntryFormFields value={draft} matters={matters} onChange={setDraft} />
+                    </div>
+                    <div className="btn-row btn-row--end">
+                      <button className="btn btn--ghost" onClick={cancelEdit}>Cancelar</button>
+                      <button className="btn btn--primary" onClick={saveEdit}>Guardar</button>
+                    </div>
                   </div>
                 ) : (
                   <>
-                    <span>{e.task}</span> — <span>{e.status}</span>
-                    {e.status === 'draft' && <button onClick={() => confirmEntry(e.id)}>Confirmar</button>}
-                    <button onClick={() => startEdit(e)}>Editar</button>
-                    <button onClick={() => handleDelete(e.id)}>Eliminar</button>
+                    <div className="row__main">
+                      <span className="row__title">{e.task}</span>{' '}
+                      <span className="row__sep">—</span>{' '}
+                      <span className={e.status === 'draft' ? 'chip' : 'chip chip--accent'}>
+                        {e.status}
+                      </span>
+                    </div>
+                    <div className="row__actions">
+                      {e.status === 'draft' && (
+                        <button className="btn btn--sm" onClick={() => confirmEntry(e.id)}>
+                          Confirmar
+                        </button>
+                      )}
+                      <button className="btn btn--ghost btn--sm" onClick={() => startEdit(e)}>
+                        Editar
+                      </button>
+                      <button className="btn btn--ghost btn--sm" onClick={() => handleDelete(e.id)}>
+                        Eliminar
+                      </button>
+                    </div>
                   </>
                 )}
               </li>
