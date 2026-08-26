@@ -941,3 +941,20 @@ textarea {
     animation-duration: 1ms !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Docket export preview
+   -------------------------------------------------------------------------- */
+
+.docket-preview__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.docket-preview__logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
