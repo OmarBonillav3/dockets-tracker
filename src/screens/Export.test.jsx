@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import { DataProvider } from '../context/DataContext.jsx';
 import { Export } from './Export.jsx';
 import * as docxExport from '../lib/docxExport.js';
-import * as pdfExport from '../lib/pdfExport.js';
 
 const now = new Date();
 const y = now.getFullYear();
@@ -46,22 +45,13 @@ afterEach(() => {
 });
 
 describe('Export', () => {
-  test('clicking the .docx button calls exportDocketToFile and shows a done message', async () => {
+  test('clicking the export button calls exportDocketToFile and shows a done message', async () => {
     const spy = vi.spyOn(docxExport, 'exportDocketToFile').mockResolvedValue(undefined);
     renderExport();
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: /generar docket \(\.docx\)/i }));
     expect(spy).toHaveBeenCalledWith(expect.objectContaining({ firmName: 'Carus Law' }));
     expect(await screen.findByText(/listo, descarga del \.docx iniciada/i)).toBeInTheDocument();
-  });
-
-  test('clicking the .pdf button calls exportDocketToPdf and shows a done message', async () => {
-    const spy = vi.spyOn(pdfExport, 'exportDocketToPdf').mockResolvedValue(undefined);
-    renderExport();
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /generar docket \(\.pdf\)/i }));
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ firmName: 'Carus Law' }));
-    expect(await screen.findByText(/listo, descarga del \.pdf iniciada/i)).toBeInTheDocument();
   });
 
   test('shows how many confirmed entries will be exported for the selected month', () => {
@@ -75,8 +65,8 @@ describe('Export', () => {
     expect(screen.getByText(/2 entradas confirmadas listas para exportar/i)).toBeInTheDocument();
   });
 
-  test('the month picker changes which month is counted and exported for both formats', async () => {
-    const docxSpy = vi.spyOn(docxExport, 'exportDocketToFile').mockResolvedValue(undefined);
+  test('the month picker changes which month is counted and exported', async () => {
+    const spy = vi.spyOn(docxExport, 'exportDocketToFile').mockResolvedValue(undefined);
     seed([entry({ id: 'e1' }), entry({ id: 'e2', date: '2026-01-09' })]);
     renderExport();
     const user = userEvent.setup();
@@ -85,7 +75,7 @@ describe('Export', () => {
     expect(screen.getByText(/1 entradas confirmadas listas para exportar/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /generar docket \(\.docx\)/i }));
-    expect(docxSpy).toHaveBeenCalledWith(
+    expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         filename: 'docket-2026-01.docx',
         entries: [expect.objectContaining({ id: 'e2' })],
@@ -93,7 +83,7 @@ describe('Export', () => {
     );
   });
 
-  test('a failing .docx export shows a Spanish error and lets the user retry, independently of the .pdf button', async () => {
+  test('a failing export shows a Spanish error and lets the user retry', async () => {
     const spy = vi
       .spyOn(docxExport, 'exportDocketToFile')
       .mockRejectedValueOnce(new Error('boom'))
@@ -110,15 +100,6 @@ describe('Export', () => {
     expect(await screen.findByText(/listo, descarga del \.docx iniciada/i)).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(spy).toHaveBeenCalledTimes(2);
-  });
-
-  test('a failing .pdf export shows its own Spanish error message', async () => {
-    vi.spyOn(pdfExport, 'exportDocketToPdf').mockRejectedValueOnce(new Error('boom'));
-    renderExport();
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /generar docket \(\.pdf\)/i }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent(/error al generar el pdf/i);
   });
 
   test('renders a live preview table matching the confirmed entries for the selected month', () => {

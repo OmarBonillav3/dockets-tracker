@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useData } from '../context/DataContext.jsx';
 import { isInMonth } from '../lib/dateUtils.js';
 import { exportDocketToFile } from '../lib/docxExport.js';
-import { exportDocketToPdf } from '../lib/pdfExport.js';
 import { MonthPicker } from '../components/MonthPicker.jsx';
 import { DocketPreview } from '../components/DocketPreview.jsx';
 
@@ -13,46 +12,26 @@ export function Export() {
   const now = new Date();
   const [period, setPeriod] = useState({ year: now.getFullYear(), month: now.getMonth() });
   const { year, month } = period;
-  const [docxStatus, setDocxStatus] = useState('idle');
-  const [docxError, setDocxError] = useState('');
-  const [pdfStatus, setPdfStatus] = useState('idle');
-  const [pdfError, setPdfError] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const monthEntries = entries.filter((e) => isInMonth(e.date, year, month) && e.status === 'confirmed');
-  const filenameBase = `docket-${year}-${String(month + 1).padStart(2, '0')}`;
 
-  async function handleExportDocx() {
-    setDocxStatus('generating');
-    setDocxError('');
+  async function handleExport() {
+    setStatus('generating');
+    setErrorMessage('');
     try {
       await exportDocketToFile({
         firmName: FIRM_NAME,
         entries: monthEntries,
         matters,
-        filename: `${filenameBase}.docx`,
+        filename: `docket-${year}-${String(month + 1).padStart(2, '0')}.docx`,
       });
-      setDocxStatus('done');
+      setStatus('done');
     } catch (error) {
       // Reset out of "generating" so the button can simply be pressed again.
-      setDocxStatus('idle');
-      setDocxError('Error al generar el docket: ' + (error?.message || 'Error desconocido'));
-    }
-  }
-
-  async function handleExportPdf() {
-    setPdfStatus('generating');
-    setPdfError('');
-    try {
-      await exportDocketToPdf({
-        firmName: FIRM_NAME,
-        entries: monthEntries,
-        matters,
-        filename: `${filenameBase}.pdf`,
-      });
-      setPdfStatus('done');
-    } catch (error) {
-      setPdfStatus('idle');
-      setPdfError('Error al generar el PDF: ' + (error?.message || 'Error desconocido'));
+      setStatus('idle');
+      setErrorMessage('Error al generar el docket: ' + (error?.message || 'Error desconocido'));
     }
   }
 
@@ -63,26 +42,16 @@ export function Export() {
       <div className="card">
         <p className="muted num">{monthEntries.length} entradas confirmadas listas para exportar.</p>
         <div className="btn-row">
-          <button className="btn btn--primary" onClick={handleExportDocx}>
+          <button className="btn btn--primary" onClick={handleExport}>
             Generar docket (.docx)
           </button>
-          <button className="btn btn--primary" onClick={handleExportPdf}>
-            Generar docket (.pdf)
-          </button>
         </div>
-        {docxStatus === 'generating' && <p className="note">Generando el .docx...</p>}
-        {docxStatus === 'done' && <p className="note">Listo, descarga del .docx iniciada.</p>}
-        {pdfStatus === 'generating' && <p className="note">Generando el .pdf...</p>}
-        {pdfStatus === 'done' && <p className="note">Listo, descarga del .pdf iniciada.</p>}
+        {status === 'generating' && <p className="note">Generando el .docx...</p>}
+        {status === 'done' && <p className="note">Listo, descarga del .docx iniciada.</p>}
       </div>
-      {docxError && (
+      {errorMessage && (
         <p className="alert alert--card" role="alert">
-          {docxError}
-        </p>
-      )}
-      {pdfError && (
-        <p className="alert alert--card" role="alert">
-          {pdfError}
+          {errorMessage}
         </p>
       )}
 
