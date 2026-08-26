@@ -1,3 +1,5 @@
+import { MatterCombobox } from './MatterCombobox.jsx';
+
 /**
  * The shared set of entry fields (matter, date, Task, detail, time, cost),
  * used by Home's manual form, Home's paste candidates and Daily Review's
@@ -11,19 +13,12 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
 
   return (
     <>
-      <select
-        className="select"
-        aria-label={labelFor('Matter')}
+      <MatterCombobox
+        label={labelFor('Matter')}
+        matters={matters}
         value={value.matterId || ''}
-        onChange={(e) => set({ matterId: e.target.value })}
-      >
-        <option value="">Selecciona matter</option>
-        {matters.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.name}
-          </option>
-        ))}
-      </select>
+        onChange={(matterId) => set({ matterId })}
+      />
       <input
         className="input"
         aria-label={labelFor('Fecha')}

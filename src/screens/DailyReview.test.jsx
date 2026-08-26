@@ -57,7 +57,7 @@ describe('DailyReview', () => {
 
     expect(screen.getByLabelText(/^task$/i)).toHaveValue('Task A');
     expect(screen.getByLabelText(/^tiempo$/i)).toHaveValue('10 min');
-    expect(screen.getByLabelText(/^matter$/i)).toHaveValue('potential-client');
+    expect(screen.getByLabelText(/^matter$/i)).toHaveValue('Sin número / Cliente potencial');
 
     await user.clear(screen.getByLabelText(/^task$/i));
     await user.type(screen.getByLabelText(/^task$/i), 'Task A editada');

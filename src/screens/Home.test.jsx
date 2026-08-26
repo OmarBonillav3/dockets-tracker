@@ -39,7 +39,8 @@ describe('Home', () => {
     await analyze(user, 'Reviewed filing. July 21. 10 min');
     expect(screen.getByLabelText(/task sugerido 0/i)).toBeInTheDocument();
     // the parser cannot guess a matter, so a matter must be chosen first
-    await user.selectOptions(screen.getByLabelText(/matter sugerido 0/i), 'potential-client');
+    await user.click(screen.getByLabelText(/matter sugerido 0/i));
+    await user.click(screen.getByRole('option', { name: /sin número/i }));
     await user.click(screen.getByRole('button', { name: /confirmar/i }));
     expect(screen.queryByLabelText(/task sugerido 0/i)).not.toBeInTheDocument();
   });
@@ -50,7 +51,8 @@ describe('Home', () => {
     await analyze(user, 'Reviewed filing. July 21. 10 min');
 
     fireEvent.change(screen.getByLabelText(/fecha sugerido 0/i), { target: { value: '2026-08-03' } });
-    await user.selectOptions(screen.getByLabelText(/matter sugerido 0/i), 'potential-client');
+    await user.click(screen.getByLabelText(/matter sugerido 0/i));
+    await user.click(screen.getByRole('option', { name: /sin número/i }));
     await user.clear(screen.getByLabelText(/task sugerido 0/i));
     await user.type(screen.getByLabelText(/task sugerido 0/i), 'Llamada con cliente');
     await user.clear(screen.getByLabelText(/detalle sugerido 0/i));
@@ -59,7 +61,7 @@ describe('Home', () => {
     await user.type(screen.getByLabelText(/tiempo sugerido 0/i), '25 min');
 
     expect(screen.getByLabelText(/fecha sugerido 0/i)).toHaveValue('2026-08-03');
-    expect(screen.getByLabelText(/matter sugerido 0/i)).toHaveValue('potential-client');
+    expect(screen.getByLabelText(/matter sugerido 0/i)).toHaveValue('Sin número / Cliente potencial');
     expect(screen.getByLabelText(/task sugerido 0/i)).toHaveValue('Llamada con cliente');
     expect(screen.getByLabelText(/detalle sugerido 0/i)).toHaveValue('Detalle editado');
     expect(screen.getByLabelText(/tiempo sugerido 0/i)).toHaveValue('25 min');
@@ -72,7 +74,8 @@ describe('Home', () => {
     expect(screen.getByRole('button', { name: /confirmar/i })).toBeDisabled();
     expect(screen.getByRole('alert')).toHaveTextContent(/falta la fecha o el matter/i);
 
-    await user.selectOptions(screen.getByLabelText(/matter sugerido 0/i), 'potential-client');
+    await user.click(screen.getByLabelText(/matter sugerido 0/i));
+    await user.click(screen.getByRole('option', { name: /sin número/i }));
     expect(screen.getByRole('button', { name: /confirmar/i })).toBeEnabled();
   });
 
@@ -80,7 +83,8 @@ describe('Home', () => {
     renderHome();
     const user = userEvent.setup();
     await analyze(user, 'Reviewed filing, no date here');
-    await user.selectOptions(screen.getByLabelText(/matter sugerido 0/i), 'potential-client');
+    await user.click(screen.getByLabelText(/matter sugerido 0/i));
+    await user.click(screen.getByRole('option', { name: /sin número/i }));
     expect(screen.getByRole('button', { name: /confirmar/i })).toBeDisabled();
 
     fireEvent.change(screen.getByLabelText(/fecha sugerido 0/i), { target: { value: '2026-08-03' } });
