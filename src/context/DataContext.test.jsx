@@ -26,8 +26,8 @@ function TestConsumer() {
       {entries.map((e) => (
         <div key={e.id}>
           <span data-testid={`status-${e.id}`}>{e.status}</span>
-          <button onClick={() => confirmEntry(e.id)}>confirm {e.id}</button>
-          <button onClick={() => confirmDay(e.date)}>confirm day {e.date}</button>
+          <button data-testid="confirm-entry" onClick={() => confirmEntry(e.id)}>confirm {e.id}</button>
+          <button data-testid="confirm-day" onClick={() => confirmDay(e.date)}>confirm day {e.date}</button>
         </div>
       ))}
     </div>
@@ -52,7 +52,7 @@ describe('DataContext', () => {
   test('confirmEntry moves a single entry to confirmed', () => {
     render(<DataProvider><TestConsumer /></DataProvider>);
     fireEvent.click(screen.getByText('add entry'));
-    fireEvent.click(screen.getByText(/^confirm [^d]/));
+    fireEvent.click(screen.getByTestId('confirm-entry'));
     expect(screen.getByText(/confirmed/)).toBeInTheDocument();
   });
 
