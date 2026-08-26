@@ -13,8 +13,9 @@ export function getSelectableYears(selectedYear, now = new Date()) {
 
 export function MonthPicker({ year, month, onChange }) {
   return (
-    <div>
+    <div className="inline-fields">
       <select
+        className="select"
         aria-label="Mes"
         value={month}
         onChange={(e) => onChange({ year, month: Number(e.target.value) })}
@@ -26,6 +27,7 @@ export function MonthPicker({ year, month, onChange }) {
         ))}
       </select>
       <select
+        className="select"
         aria-label="Año"
         value={year}
         onChange={(e) => onChange({ year: Number(e.target.value), month })}

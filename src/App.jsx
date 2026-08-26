@@ -14,8 +14,9 @@ export default function App() {
   return (
     <DataProvider>
       <BrowserRouter>
+        <div className="app-shell">
         <Nav />
-        <main>
+        <main className="app-main">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/review" element={<DailyReview />} />
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
+        </div>
       </BrowserRouter>
     </DataProvider>
   );

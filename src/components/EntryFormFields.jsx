@@ -12,6 +12,7 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
   return (
     <>
       <select
+        className="select"
         aria-label={labelFor('Matter')}
         value={value.matterId || ''}
         onChange={(e) => set({ matterId: e.target.value })}
@@ -24,24 +25,28 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
         ))}
       </select>
       <input
+        className="input"
         aria-label={labelFor('Fecha')}
         type="date"
         value={value.date || ''}
         onChange={(e) => set({ date: e.target.value })}
       />
       <input
+        className="input"
         aria-label={labelFor('Task')}
         value={value.task || ''}
         onChange={(e) => set({ task: e.target.value })}
         placeholder="Task"
       />
       <textarea
+        className="textarea"
         aria-label={labelFor('Detalle')}
         value={value.detailDescription || ''}
         onChange={(e) => set({ detailDescription: e.target.value })}
         placeholder="Detalle"
       />
       <input
+        className="input input--num"
         aria-label={labelFor('Tiempo')}
         value={value.timeSpent || ''}
         onChange={(e) => set({ timeSpent: e.target.value })}
@@ -49,6 +54,7 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
       />
       {showCost && (
         <input
+          className="input input--num"
           aria-label={labelFor('Costo')}
           value={value.costAssociated || ''}
           onChange={(e) => set({ costAssociated: e.target.value })}

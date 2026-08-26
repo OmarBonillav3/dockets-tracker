@@ -12,11 +12,17 @@ const LINKS = [
 
 export function Nav() {
   return (
-    <nav>
-      <ul>
+    <nav className="nav">
+      <ul className="nav__list">
         {LINKS.map((link) => (
           <li key={link.to}>
-            <NavLink to={link.to} end={link.end}>
+            <NavLink
+              to={link.to}
+              end={link.end}
+              className={({ isActive }) =>
+                isActive ? 'nav__link is-active' : 'nav__link'
+              }
+            >
               {link.label}
             </NavLink>
           </li>
