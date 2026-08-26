@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { DataProvider } from './context/DataContext.jsx';
 import { Nav } from './components/Nav.jsx';
 import { Home } from './screens/Home.jsx';
@@ -13,7 +13,7 @@ import { Settings } from './screens/Settings.jsx';
 export default function App() {
   return (
     <DataProvider>
-      <BrowserRouter>
+      <HashRouter>
         <div className="app-shell">
         <Nav />
         <main className="app-main">
@@ -29,7 +29,7 @@ export default function App() {
           </Routes>
         </main>
         </div>
-      </BrowserRouter>
+      </HashRouter>
     </DataProvider>
   );
 }
