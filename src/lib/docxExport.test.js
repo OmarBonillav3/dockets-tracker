@@ -103,6 +103,31 @@ describe('buildDocketZipBlob (real bundled template)', () => {
     expect(zip.file('word/media/image1.png')).not.toBeNull();
     expect(zip.file('word/header1.xml')).not.toBeNull();
   });
+
+  // Regression guard: an earlier version of the bundled template was produced
+  // by round-tripping document.xml through Python's ElementTree, which drops
+  // "unused" xmlns declarations from the <w:document> root — but Word's
+  // mc:Ignorable attribute still listed those now-undeclared prefixes (w15,
+  // w16*, wp14, ...), which is invalid OOXML and made real Word refuse to
+  // open the file ("Word found unreadable content"). Every prefix named in
+  // mc:Ignorable must have a matching xmlns: declaration on the same element.
+  test('every namespace prefix referenced by mc:Ignorable is actually declared', async () => {
+    const templateArrayBuffer = loadRealTemplateArrayBuffer();
+    const blob = await buildDocketZipBlob({ entries, matters, templateArrayBuffer });
+
+    const zip = await JSZip.loadAsync(blob);
+    const xml = await zip.file('word/document.xml').async('string');
+
+    const rootTag = xml.match(/<w:document\b[^>]*>/)[0];
+    const declaredPrefixes = new Set(Array.from(rootTag.matchAll(/xmlns:([\w-]+)=/g)).map((m) => m[1]));
+    const ignorable = rootTag.match(/mc:Ignorable="([^"]*)"/);
+    expect(ignorable).not.toBeNull();
+    const ignorablePrefixes = ignorable[1].split(/\s+/).filter(Boolean);
+    expect(ignorablePrefixes.length).toBeGreaterThan(0);
+    for (const prefix of ignorablePrefixes) {
+      expect(declaredPrefixes.has(prefix)).toBe(true);
+    }
+  });
 });
 
 describe('exportDocketToFile', () => {
