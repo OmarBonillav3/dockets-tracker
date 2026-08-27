@@ -692,22 +692,30 @@ textarea {
 }
 
 /* Native date inputs' own empty-state hint ("dd/mm/aaaa") is a browser
-   feature we don't control — desktop Chrome renders it, Android Chrome
-   doesn't, leaving the field looking like a blank box there. This overlay
-   draws the same hint ourselves so it's identical on every device; it's
-   only mounted in the DOM while the field has no value (see the JSX), and
-   :focus below hides it so it never sits on top of the native picker UI. */
+   feature we don't control — some browsers/platforms render it, some
+   don't, and there's no reliable way to detect which from CSS (viewport
+   width is NOT a safe proxy: a desktop browser window narrowed below the
+   mobile breakpoint still renders its native hint just fine, which doubled
+   the text there). Instead we make the native one invisible unconditionally
+   whenever the field is empty, via .date-field__input--empty, and always
+   draw our own hint on top in its place — so exactly one hint is ever
+   visible, on every browser, at every width. */
 .date-field {
   position: relative;
   min-width: 0;
 }
 
+.date-field__input--empty {
+  color: transparent;
+}
+
+/* Restore real text color on focus, so the native picker's editable
+   dd/mm/yyyy segments are visible while actually interacting with it. */
+.date-field__input--empty:focus {
+  color: var(--text);
+}
+
 .date-field__placeholder {
-  /* Hidden by default: desktop browsers already render their own native
-     hint reliably, and drawing ours on top of it doubles the text. Only
-     shown below, at the same width where the rest of the app switches to
-     its mobile layout — that's where the native hint actually goes missing. */
-  display: none;
   position: absolute;
   top: 50%;
   left: var(--sp-3);
@@ -718,10 +726,8 @@ textarea {
   pointer-events: none;
 }
 
-@media (max-width: 860px) {
-  .date-field__placeholder {
-    display: block;
-  }
+.date-field__input--empty:focus + .date-field__placeholder {
+  display: none;
 }
 
 .date-field > .input:focus + .date-field__placeholder {

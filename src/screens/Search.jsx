@@ -34,7 +34,13 @@ export function Search() {
             ))}
           </select>
           <div className="date-field">
-            <input className="input" aria-label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input
+              className={from ? 'input' : 'input date-field__input--empty'}
+              aria-label="Desde"
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+            />
             {!from && (
               <span className="date-field__placeholder" aria-hidden="true">
                 dd/mm/aaaa
@@ -42,7 +48,13 @@ export function Search() {
             )}
           </div>
           <div className="date-field">
-            <input className="input" aria-label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <input
+              className={to ? 'input' : 'input date-field__input--empty'}
+              aria-label="Hasta"
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
             {!to && (
               <span className="date-field__placeholder" aria-hidden="true">
                 dd/mm/aaaa
