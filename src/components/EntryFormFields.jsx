@@ -19,15 +19,7 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
         value={value.matterId || ''}
         onChange={(matterId) => set({ matterId })}
       />
-      <div className="field">
-        {/* Native date inputs' own empty-state hint ("dd/mm/aaaa") is a
-            browser feature, not something we control — desktop Chrome shows
-            it, Android Chrome doesn't, leaving the field looking blank with
-            no clue what it's for. A visible caption fixes that everywhere,
-            regardless of platform. */}
-        <span className="field-label" aria-hidden="true">
-          {labelFor('Fecha')}
-        </span>
+      <div className="date-field">
         <input
           className="input"
           aria-label={labelFor('Fecha')}
@@ -35,6 +27,19 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
           value={value.date || ''}
           onChange={(e) => set({ date: e.target.value })}
         />
+        {/* Native date inputs' own empty-state hint ("dd/mm/aaaa") is a
+            browser feature, not something we control — desktop Chrome shows
+            it, Android Chrome doesn't, leaving the field looking blank with
+            no clue what it's for. This overlay renders the same hint
+            ourselves so it looks identical on every device; it disappears
+            once a real date is picked (the native rendering of the
+            selected date already works fine) or while the input is
+            focused (so it doesn't sit on top of the native picker UI). */}
+        {!value.date && (
+          <span className="date-field__placeholder" aria-hidden="true">
+            dd/mm/aaaa
+          </span>
+        )}
       </div>
       <input
         className="input"

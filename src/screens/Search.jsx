@@ -33,13 +33,21 @@ export function Search() {
               </option>
             ))}
           </select>
-          <div className="field">
-            <span className="field-label" aria-hidden="true">Desde</span>
+          <div className="date-field">
             <input className="input" aria-label="Desde" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            {!from && (
+              <span className="date-field__placeholder" aria-hidden="true">
+                dd/mm/aaaa
+              </span>
+            )}
           </div>
-          <div className="field">
-            <span className="field-label" aria-hidden="true">Hasta</span>
+          <div className="date-field">
             <input className="input" aria-label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            {!to && (
+              <span className="date-field__placeholder" aria-hidden="true">
+                dd/mm/aaaa
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -691,21 +691,41 @@ textarea {
   gap: var(--gap);
 }
 
-/* Wraps a field that needs a visible caption instead of relying on a
-   placeholder — native date inputs' empty-state hint is a browser feature
-   (shown on desktop Chrome, not on Android Chrome), so date fields can't
-   rely on it to say what they're for. */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* Native date inputs' own empty-state hint ("dd/mm/aaaa") is a browser
+   feature we don't control — desktop Chrome renders it, Android Chrome
+   doesn't, leaving the field looking like a blank box there. This overlay
+   draws the same hint ourselves so it's identical on every device; it's
+   only mounted in the DOM while the field has no value (see the JSX), and
+   :focus below hides it so it never sits on top of the native picker UI. */
+.date-field {
+  position: relative;
   min-width: 0;
 }
 
-.field-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  padding: 0 2px;
+.date-field__placeholder {
+  /* Hidden by default: desktop browsers already render their own native
+     hint reliably, and drawing ours on top of it doubles the text. Only
+     shown below, at the same width where the rest of the app switches to
+     its mobile layout — that's where the native hint actually goes missing. */
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: var(--sp-3);
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .date-field__placeholder {
+    display: block;
+  }
+}
+
+.date-field > .input:focus + .date-field__placeholder {
+  display: none;
 }
 
 .inline-fields {
