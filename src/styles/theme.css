@@ -1132,3 +1132,102 @@ textarea {
   height: 32px;
   object-fit: contain;
 }
+
+/* --------------------------------------------------------------------------
+   Day picker (export day selection calendar)
+   -------------------------------------------------------------------------- */
+
+.day-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+.day-picker__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.day-picker__nav .btn {
+  padding: 2px var(--sp-2);
+}
+
+.day-picker__title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.day-picker__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.day-picker__row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.day-picker__weekday {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0;
+}
+
+.day-picker__day {
+  position: relative;
+  /* Card is full-width like the ones below it; keep the cells short so the
+     calendar stays compact instead of a wall of tall squares. */
+  height: clamp(30px, 3.4vw, 34px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--control);
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.day-picker__day:hover:not(:disabled) {
+  background: var(--control-hover);
+}
+
+.day-picker__day--outside {
+  color: var(--text-disabled);
+  background: transparent;
+}
+
+.day-picker__day--has-entries::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+
+.day-picker__day--selected,
+.day-picker__day--selected:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.day-picker__day--selected.day-picker__day--has-entries::after {
+  background: var(--accent-on);
+}
+
+.day-picker__actions {
+  flex-wrap: wrap;
+}

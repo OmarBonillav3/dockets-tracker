@@ -1,5 +1,7 @@
 const MATTERS_KEY = 'dockets:matters';
 const ENTRIES_KEY = 'dockets:entries';
+const TEMPLATE_KEY = 'dockets:template';
+const TEMPLATE_NAME_KEY = 'dockets:templateName';
 
 export const POTENTIAL_CLIENT_MATTER_ID = 'potential-client';
 
@@ -81,6 +83,53 @@ export function loadEntries() {
 
 export function saveEntries(entries) {
   localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+}
+
+// A .docx is binary; localStorage only holds strings, so the uploaded
+// template is kept base64-encoded. Templates are small (tens of KB), so this
+// stays well inside the localStorage budget. Chunked so a large byte array
+// never blows String.fromCharCode's argument limit.
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+export function saveCustomTemplate(name, arrayBuffer) {
+  localStorage.setItem(TEMPLATE_KEY, arrayBufferToBase64(arrayBuffer));
+  localStorage.setItem(TEMPLATE_NAME_KEY, name);
+}
+
+export function loadCustomTemplate() {
+  const base64 = localStorage.getItem(TEMPLATE_KEY);
+  if (!base64) return null;
+  try {
+    return {
+      name: localStorage.getItem(TEMPLATE_NAME_KEY) || 'plantilla.docx',
+      arrayBuffer: base64ToArrayBuffer(base64),
+    };
+  } catch (error) {
+    console.error('dockets: no se pudo leer la plantilla guardada, se usará la predeterminada.', error);
+    return null;
+  }
+}
+
+export function clearCustomTemplate() {
+  localStorage.removeItem(TEMPLATE_KEY);
+  localStorage.removeItem(TEMPLATE_NAME_KEY);
 }
 
 export function exportBackup() {

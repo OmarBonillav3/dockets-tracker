@@ -6,6 +6,9 @@ import {
   saveEntries,
   exportBackup,
   importBackup,
+  saveCustomTemplate,
+  loadCustomTemplate,
+  clearCustomTemplate,
   POTENTIAL_CLIENT_MATTER_ID,
 } from './storage.js';
 
@@ -100,5 +103,32 @@ describe('backup', () => {
 
   test('importBackup rejects malformed data', () => {
     expect(() => importBackup(JSON.stringify({ foo: 'bar' }))).toThrow();
+  });
+});
+
+describe('custom docket template', () => {
+  test('loadCustomTemplate returns null when nothing is saved', () => {
+    expect(loadCustomTemplate()).toBeNull();
+  });
+
+  test('saveCustomTemplate round-trips the exact bytes and the file name', () => {
+    const bytes = new Uint8Array([0, 1, 2, 80, 75, 200, 255, 42]);
+    saveCustomTemplate('plantilla-de-la-novia.docx', bytes.buffer);
+
+    const loaded = loadCustomTemplate();
+    expect(loaded.name).toBe('plantilla-de-la-novia.docx');
+    expect(new Uint8Array(loaded.arrayBuffer)).toEqual(bytes);
+  });
+
+  test('clearCustomTemplate removes the stored template', () => {
+    saveCustomTemplate('x.docx', new Uint8Array([1, 2, 3]).buffer);
+    clearCustomTemplate();
+    expect(loadCustomTemplate()).toBeNull();
+  });
+
+  test('custom template is not included in the JSON backup', () => {
+    saveCustomTemplate('x.docx', new Uint8Array([1, 2, 3]).buffer);
+    const json = JSON.parse(exportBackup());
+    expect(Object.keys(json).sort()).toEqual(['entries', 'matters']);
   });
 });

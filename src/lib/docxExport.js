@@ -77,13 +77,43 @@ export async function buildDocketZipBlob({ entries, matters, templateArrayBuffer
   });
 }
 
-export async function exportDocketToFile({ entries, matters, filename, templateUrl = DEFAULT_TEMPLATE_URL }) {
-  const response = await fetch(templateUrl);
-  if (!response.ok) {
-    throw new Error('No se pudo cargar la plantilla del docket.');
+/**
+ * Structural check for a user-uploaded template, run at upload time so a
+ * broken file is rejected in Settings instead of blowing up at export. Reuses
+ * the real fill logic (with zero rows) as the table/format-row check, so the
+ * accepted shape is exactly what buildDocketZipBlob can fill.
+ */
+export async function validateDocketTemplate(templateArrayBuffer) {
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(templateArrayBuffer);
+  } catch {
+    throw new Error('El archivo no es un .docx válido.');
   }
-  const templateArrayBuffer = await response.arrayBuffer();
-  const blob = await buildDocketZipBlob({ entries, matters, templateArrayBuffer });
+  const documentXmlFile = zip.file(DOCUMENT_XML_PATH);
+  if (!documentXmlFile) {
+    throw new Error('La plantilla del docket no contiene word/document.xml.');
+  }
+  const xml = await documentXmlFile.async('string');
+  fillTemplateDocumentXml(xml, []);
+}
+
+export async function exportDocketToFile({
+  entries,
+  matters,
+  filename,
+  templateUrl = DEFAULT_TEMPLATE_URL,
+  templateArrayBuffer,
+}) {
+  let buffer = templateArrayBuffer;
+  if (!buffer) {
+    const response = await fetch(templateUrl);
+    if (!response.ok) {
+      throw new Error('No se pudo cargar la plantilla del docket.');
+    }
+    buffer = await response.arrayBuffer();
+  }
+  const blob = await buildDocketZipBlob({ entries, matters, templateArrayBuffer: buffer });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

@@ -29,7 +29,7 @@ export function DocketPreview({
             {rows.length === 0 && (
               <tr>
                 <td colSpan={HEADERS.length} className="empty">
-                  No hay entradas confirmadas para este mes todavía.
+                  No hay entradas confirmadas para los días seleccionados.
                 </td>
               </tr>
             )}

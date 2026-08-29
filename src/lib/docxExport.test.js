@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import JSZip from 'jszip';
-import { entriesToRows, fillTemplateDocumentXml, buildDocketZipBlob, exportDocketToFile } from './docxExport.js';
+import { entriesToRows, fillTemplateDocumentXml, buildDocketZipBlob, exportDocketToFile, validateDocketTemplate } from './docxExport.js';
 
 const matters = [{ id: 'm1', name: 'Gabriel Gonzalez Ocampo - Immigration', caseNumber: '0024-002', rate: 100, isPotentialClient: false }];
 
@@ -164,5 +164,47 @@ describe('exportDocketToFile', () => {
     await expect(exportDocketToFile({ entries, matters, filename: 'x.docx' })).rejects.toThrow(
       /no se pudo cargar la plantilla/i
     );
+  });
+
+  test('uses a provided template ArrayBuffer instead of fetching', async () => {
+    global.fetch = vi.fn();
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    await exportDocketToFile({
+      entries,
+      matters,
+      filename: 'x.docx',
+      templateArrayBuffer: loadRealTemplateArrayBuffer(),
+    });
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
+  });
+});
+
+describe('validateDocketTemplate', () => {
+  test('resolves for the real bundled template', async () => {
+    await expect(validateDocketTemplate(loadRealTemplateArrayBuffer())).resolves.toBeUndefined();
+  });
+
+  test('rejects a file that is not a valid .docx (zip)', async () => {
+    await expect(validateDocketTemplate(Buffer.from([1, 2, 3, 4, 5]))).rejects.toThrow(/no es un \.docx válido/i);
+  });
+
+  test('rejects a .docx whose document.xml has no table', async () => {
+    const zip = new JSZip();
+    zip.file(
+      'word/document.xml',
+      '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body/></w:document>'
+    );
+    const buf = await zip.generateAsync({ type: 'nodebuffer' });
+    await expect(validateDocketTemplate(buf)).rejects.toThrow(/tabla esperada/i);
+  });
+
+  test('rejects a .docx that has no word/document.xml at all', async () => {
+    const zip = new JSZip();
+    zip.file('hello.txt', 'not a word doc');
+    const buf = await zip.generateAsync({ type: 'nodebuffer' });
+    await expect(validateDocketTemplate(buf)).rejects.toThrow(/document\.xml/i);
   });
 });

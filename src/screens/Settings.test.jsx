@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Settings } from './Settings.jsx';
 import * as storage from '../lib/storage.js';
+import * as docxExport from '../lib/docxExport.js';
 
 describe('Settings', () => {
   beforeEach(() => {
@@ -66,5 +67,62 @@ describe('Settings', () => {
     });
     // Verify reload was NOT called
     expect(window.location.reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('Settings - custom docket template', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  function docxFile(name = 'plantilla-nueva.docx') {
+    return new File(['PK fake docx bytes'], name, {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+  }
+
+  test('uploading a valid .docx validates it, saves it, and shows its name', async () => {
+    vi.spyOn(docxExport, 'validateDocketTemplate').mockResolvedValue(undefined);
+    const saveSpy = vi.spyOn(storage, 'saveCustomTemplate').mockImplementation(() => {});
+    render(<Settings />);
+
+    await userEvent.upload(screen.getByLabelText(/plantilla de word/i), docxFile());
+
+    await vi.waitFor(() => {
+      expect(saveSpy).toHaveBeenCalledWith('plantilla-nueva.docx', expect.any(ArrayBuffer));
+    });
+    expect(screen.getByText(/plantilla-nueva\.docx/)).toBeInTheDocument();
+  });
+
+  test('uploading a file that fails validation shows the error and does not save', async () => {
+    vi.spyOn(docxExport, 'validateDocketTemplate').mockRejectedValue(
+      new Error('La plantilla del docket no tiene la tabla esperada.')
+    );
+    const saveSpy = vi.spyOn(storage, 'saveCustomTemplate').mockImplementation(() => {});
+    render(<Settings />);
+
+    await userEvent.upload(screen.getByLabelText(/plantilla de word/i), docxFile('mala.docx'));
+
+    await vi.waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/no tiene la tabla esperada/i);
+    });
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  test('shows the saved template name and lets the user reset to the default', async () => {
+    vi.spyOn(storage, 'loadCustomTemplate').mockReturnValue({
+      name: 'plantilla-vieja.docx',
+      arrayBuffer: new ArrayBuffer(8),
+    });
+    const clearSpy = vi.spyOn(storage, 'clearCustomTemplate').mockImplementation(() => {});
+    render(<Settings />);
+
+    expect(screen.getByText(/plantilla-vieja\.docx/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /usar plantilla predeterminada/i }));
+
+    expect(clearSpy).toHaveBeenCalled();
+    expect(screen.queryByText(/plantilla-vieja\.docx/)).not.toBeInTheDocument();
   });
 });
