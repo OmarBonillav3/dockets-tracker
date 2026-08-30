@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useData } from '../context/DataContext.jsx';
 import { groupEntriesByDate, findEmptyDays } from '../lib/dateUtils.js';
+import { parseDurationToHours, formatHours } from '../lib/timeUtils.js';
 import { EntryFormFields } from '../components/EntryFormFields.jsx';
 
 export function DailyReview() {
@@ -37,6 +38,14 @@ export function DailyReview() {
     cancelEdit();
   }
 
+  // Mirrors the monthly totals: confirmed entries only, so the number here
+  // matches what a day actually contributes to the export.
+  function confirmedHours(dayEntries) {
+    return dayEntries
+      .filter((e) => e.status === 'confirmed')
+      .reduce((sum, e) => sum + parseDurationToHours(e.timeSpent), 0);
+  }
+
   function handleDelete(id) {
     if (editingId === id) cancelEdit();
     deleteEntry(id);
@@ -64,7 +73,12 @@ export function DailyReview() {
       {dates.map((date) => (
         <section className="card" key={date}>
           <div className="card__header">
-            <h2 className="day-card__date">{date}</h2>
+            <div className="day-card__heading">
+              <h2 className="day-card__date">{date}</h2>
+              <span className="day-card__hours num">
+                {formatHours(confirmedHours(grouped[date]))} confirmadas
+              </span>
+            </div>
             <button className="btn btn--sm" onClick={() => confirmDay(date)}>
               Confirmar todo el día
             </button>

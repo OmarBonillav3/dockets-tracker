@@ -19,11 +19,34 @@ export function getAllDatesInMonth(year, month) {
   });
 }
 
-function toISODate(date) {
+export function toISODate(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+/**
+ * A month laid out as calendar weeks for a Monday-first grid: an array of
+ * 7-cell rows, each cell `{ dateStr, inMonth }`. Leading/trailing cells carry
+ * the real dates of the adjacent months (with inMonth: false) so the grid is
+ * always rectangular.
+ */
+export function getMonthGrid(year, month) {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDow = (new Date(year, month, 1).getDay() + 6) % 7; // Monday = 0
+  const totalCells = Math.ceil((firstDow + daysInMonth) / 7) * 7;
+
+  const weeks = [];
+  for (let cell = 0; cell < totalCells; cell += 1) {
+    const d = new Date(year, month, 1 + (cell - firstDow));
+    if (cell % 7 === 0) weeks.push([]);
+    weeks[weeks.length - 1].push({
+      dateStr: toISODate(d),
+      inMonth: d.getFullYear() === year && d.getMonth() === month,
+    });
+  }
+  return weeks;
 }
 
 /**
