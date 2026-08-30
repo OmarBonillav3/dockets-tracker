@@ -49,6 +49,19 @@ describe('DailyReview', () => {
     expect(screen.getAllByText('confirmed')).toHaveLength(2);
   });
 
+  test('shows only confirmed hours in the day total, and updates as entries are confirmed', async () => {
+    renderReview();
+    const user = userEvent.setup();
+    expect(screen.getByText(/0\.00 hrs confirmadas/)).toBeInTheDocument();
+
+    const [firstConfirm] = screen.getAllByRole('button', { name: /^confirmar$/i });
+    await user.click(firstConfirm);
+    expect(screen.getByText(/0\.17 hrs confirmadas/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /confirmar todo el día/i }));
+    expect(screen.getByText(/0\.25 hrs confirmadas/)).toBeInTheDocument();
+  });
+
   test('editing an entry inline pre-fills the form and saves the changes', async () => {
     renderReview();
     const user = userEvent.setup();
