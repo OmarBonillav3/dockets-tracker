@@ -33,6 +33,50 @@ describe('Home', () => {
     expect(screen.getByLabelText(/^task$/i)).toHaveValue('Sent translated birth certificate');
   });
 
+  test('manual mode: a new matter can be created from the matter field and is used by the entry', async () => {
+    renderHome();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText(/^matter$/i));
+    await user.type(screen.getByLabelText(/^matter$/i), 'Lucia Ramirez - Divorcio');
+    await user.click(screen.getByRole('option', { name: /crear matter/i }));
+    await user.type(screen.getByLabelText(/número de caso del nuevo matter/i), '0077-004');
+    await user.click(screen.getByRole('button', { name: /crear matter/i }));
+
+    expect(screen.getByLabelText(/^matter$/i)).toHaveValue('Lucia Ramirez - Divorcio');
+    // the case number was captured here, so there is nothing left to complete elsewhere
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+    const savedMatters = JSON.parse(localStorage.getItem('dockets:matters'));
+    const created = savedMatters.find((m) => m.name === 'Lucia Ramirez - Divorcio');
+    expect(created).toBeTruthy();
+    expect(created.caseNumber).toBe('0077-004');
+
+    await user.type(screen.getByLabelText(/^task$/i), 'Primera consulta');
+    await user.click(screen.getByRole('button', { name: /^guardar$/i }));
+
+    const savedEntries = JSON.parse(localStorage.getItem('dockets:entries'));
+    expect(savedEntries).toHaveLength(1);
+    expect(savedEntries[0].matterId).toBe(created.id);
+  });
+
+  test('paste mode: a new matter can be created straight from a parsed candidate', async () => {
+    renderHome();
+    const user = userEvent.setup();
+    await analyze(user, 'Reviewed filing. July 21. 10 min');
+
+    await user.click(screen.getByLabelText(/matter sugerido 0/i));
+    await user.type(screen.getByLabelText(/matter sugerido 0/i), 'Cliente Recien Llegado');
+    await user.click(screen.getByRole('option', { name: /crear matter/i }));
+    await user.click(screen.getByRole('button', { name: /crear matter/i }));
+
+    expect(screen.getByLabelText(/matter sugerido 0/i)).toHaveValue('Cliente Recien Llegado');
+    const savedMatters = JSON.parse(localStorage.getItem('dockets:matters'));
+    expect(savedMatters.some((m) => m.name === 'Cliente Recien Llegado')).toBe(true);
+    // skipping the case number is allowed, but it is called out so it can be completed later
+    expect(screen.getByRole('status')).toHaveTextContent(/sin número de caso/i);
+  });
+
   test('paste mode: pasting text and analyzing shows an editable candidate that can be confirmed', async () => {
     renderHome();
     const user = userEvent.setup();

@@ -39,7 +39,9 @@ export function DataProvider({ children }) {
       : null;
 
   const addMatter = useCallback((matter) => {
-    setMatters((prev) => [...prev, { ...matter, id: makeId() }]);
+    const newMatter = { ...matter, id: makeId() };
+    setMatters((prev) => [...prev, newMatter]);
+    return newMatter;
   }, []);
 
   const updateMatter = useCallback((id, updates) => {

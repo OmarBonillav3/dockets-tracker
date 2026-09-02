@@ -58,6 +58,48 @@ describe('fillTemplateDocumentXml', () => {
     ]);
   });
 
+  test('fills blank cells that have no w:t node, and cycles the banded format rows', () => {
+    const bandedTemplateXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:tbl>
+      <w:tr><w:tc><w:p><w:r><w:t>Matter name</w:t></w:r></w:p></w:tc><w:tc><w:p><w:r><w:t>Date</w:t></w:r></w:p></w:tc></w:tr>
+      <w:tr><w:trPr><w:cnfStyle w:val="odd"/></w:trPr><w:tc><w:p/></w:tc><w:tc><w:p/></w:tc></w:tr>
+      <w:tr><w:tc><w:p/></w:tc><w:tc><w:p/></w:tc></w:tr>
+    </w:tbl>
+  </w:body>
+</w:document>`;
+
+    const filled = fillTemplateDocumentXml(bandedTemplateXml, [
+      ['Matter A', '2026-08-19'],
+      ['Matter B', '2026-08-27'],
+      ['Matter C', '2026-09-02'],
+    ]);
+
+    const doc = new DOMParser().parseFromString(filled, 'application/xml');
+    const rows = Array.from(doc.getElementsByTagName('w:tr'));
+
+    expect(rows).toHaveLength(4);
+    expect(rows.map((row) => Array.from(row.getElementsByTagName('w:t')).map((t) => t.textContent))).toEqual([
+      ['Matter name', 'Date'],
+      ['Matter A', '2026-08-19'],
+      ['Matter B', '2026-08-27'],
+      ['Matter C', '2026-09-02'],
+    ]);
+
+    const banding = rows.map((row) => row.getElementsByTagName('w:cnfStyle')[0]?.getAttribute('w:val') ?? null);
+    expect(banding).toEqual([null, 'odd', null, 'odd']);
+  });
+
+  test('leaves the table with only its header when there are no entries', () => {
+    const filled = fillTemplateDocumentXml(FIXTURE_TEMPLATE_XML, []);
+    const doc = new DOMParser().parseFromString(filled, 'application/xml');
+    const rows = Array.from(doc.getElementsByTagName('w:tr'));
+
+    expect(rows).toHaveLength(1);
+    expect(filled).not.toContain('placeholder');
+  });
+
   test('throws a Spanish error when the template has no table', () => {
     const noTableXml = `<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body/></w:document>`;
     expect(() => fillTemplateDocumentXml(noTableXml, [])).toThrow(/tabla esperada/i);
@@ -90,9 +132,42 @@ describe('buildDocketZipBlob (real bundled template)', () => {
 
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
     const rows = Array.from(doc.getElementsByTagName('w:tr'));
-    // header + 2 confirmed entries, template placeholder row is gone
+    // header + 2 confirmed entries, every blank format row is gone
     expect(rows).toHaveLength(3);
     expect(xml).not.toContain('placeholder');
+    const dataCells = Array.from(rows[1].getElementsByTagName('w:tc')).map(
+      (cell) => cell.getElementsByTagName('w:t')[0]?.textContent ?? ''
+    );
+    expect(dataCells).toEqual([
+      '0024-002 - Gabriel Gonzalez Ocampo - Immigration',
+      '2026-07-21',
+      'Sent translated docs',
+      'Sent translated birth certificate',
+      '10 min',
+      '25',
+    ]);
+  });
+
+  test('merges days from different months into the one table, in date order', async () => {
+    const templateArrayBuffer = loadRealTemplateArrayBuffer();
+    const crossMonth = [
+      { id: 'a', matterId: 'm1', date: '2026-08-19', task: 'Agosto', detailDescription: '', timeSpent: '20 min', costAssociated: '', status: 'confirmed', createdAt: '' },
+      { id: 'b', matterId: 'm1', date: '2026-09-02', task: 'Septiembre', detailDescription: '', timeSpent: '30 min', costAssociated: '', status: 'confirmed', createdAt: '' },
+    ];
+    const blob = await buildDocketZipBlob({ entries: crossMonth, matters, templateArrayBuffer });
+
+    const zip = await JSZip.loadAsync(blob);
+    const xml = await zip.file('word/document.xml').async('string');
+    const doc = new DOMParser().parseFromString(xml, 'application/xml');
+
+    expect(doc.getElementsByTagName('w:tbl')).toHaveLength(1);
+    const rows = Array.from(doc.getElementsByTagName('w:tr'));
+    expect(rows).toHaveLength(3);
+    const dates = rows.slice(1).map((row) => {
+      const cells = Array.from(row.getElementsByTagName('w:tc'));
+      return cells[1].getElementsByTagName('w:t')[0].textContent;
+    });
+    expect(dates).toEqual(['2026-08-19', '2026-09-02']);
   });
 
   test('preserves the template logo and other parts untouched', async () => {

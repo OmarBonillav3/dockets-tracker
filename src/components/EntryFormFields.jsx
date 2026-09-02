@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { MatterCombobox } from './MatterCombobox.jsx';
 
 /**
@@ -8,8 +9,22 @@ import { MatterCombobox } from './MatterCombobox.jsx';
  * `labelFor` lets a caller disambiguate accessible labels when several copies
  * are on screen at once (e.g. one per paste candidate).
  */
-export function EntryFormFields({ value, matters, onChange, labelFor = (base) => base, showCost = true }) {
+export function EntryFormFields({
+  value,
+  matters,
+  onChange,
+  onCreateMatter,
+  labelFor = (base) => base,
+  showCost = true,
+}) {
   const set = (patch) => onChange({ ...value, ...patch });
+  const [matterMissingCaseNumber, setMatterMissingCaseNumber] = useState(null);
+
+  function handleCreateMatter(name, caseNumber) {
+    const created = onCreateMatter(name, caseNumber);
+    if (created) setMatterMissingCaseNumber(created.caseNumber ? null : created.name);
+    return created;
+  }
 
   return (
     <>
@@ -18,6 +33,7 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
         matters={matters}
         value={value.matterId || ''}
         onChange={(matterId) => set({ matterId })}
+        onCreateMatter={onCreateMatter ? handleCreateMatter : undefined}
       />
       <div className="date-field">
         <input
@@ -70,6 +86,12 @@ export function EntryFormFields({ value, matters, onChange, labelFor = (base) =>
           onChange={(e) => set({ costAssociated: e.target.value })}
           placeholder="Costo"
         />
+      )}
+      {matterMissingCaseNumber && (
+        <p className="note note--full" role="status">
+          Matter “{matterMissingCaseNumber}” creado sin número de caso. Agrégaselo en la pantalla Matters
+          para que salga completo en el docket.
+        </p>
       )}
     </>
   );

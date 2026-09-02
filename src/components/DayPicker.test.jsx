@@ -62,6 +62,30 @@ describe('DayPicker', () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 
+  test('lists every selected day, including days from months the grid is not showing', () => {
+    setup({ selectedDates: ['2026-08-19', '2026-07-15', '2026-09-02'] });
+    expect(screen.getByText(/3 días seleccionados de 3 meses distintos/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Quitar 15 de julio de 2026' })).toHaveTextContent('15 jul');
+    expect(screen.getByRole('button', { name: 'Quitar 19 de agosto de 2026' })).toHaveTextContent('19 ago');
+    expect(screen.getByRole('button', { name: 'Quitar 2 de septiembre de 2026' })).toHaveTextContent('2 sep');
+  });
+
+  test('does not mention several months when the selection is inside one', () => {
+    setup({ selectedDates: ['2026-07-15', '2026-07-16'] });
+    expect(screen.getByText('2 días seleccionados')).toBeInTheDocument();
+  });
+
+  test('a selected day can be removed from the list without navigating to its month', async () => {
+    const { onChange, user } = setup({ selectedDates: ['2026-07-15', '2026-09-02'] });
+    await user.click(screen.getByRole('button', { name: 'Quitar 2 de septiembre de 2026' }));
+    expect(onChange).toHaveBeenCalledWith(['2026-07-15']);
+  });
+
+  test('shows no selection summary when nothing is selected', () => {
+    setup({ selectedDates: [] });
+    expect(screen.queryByText(/seleccionad/i)).not.toBeInTheDocument();
+  });
+
   test('marks days that have entries', () => {
     setup({ entryDates: ['2026-07-10'] });
     expect(screen.getByRole('button', { name: '10 de julio de 2026' })).toHaveAttribute('data-has-entries', 'true');
