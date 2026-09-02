@@ -38,6 +38,36 @@ function TestConsumer() {
 }
 
 describe('DataContext', () => {
+  test('addMatter returns the created matter with its new id', () => {
+    let returned = null;
+    function Probe() {
+      const { addMatter, matters } = useData();
+      return (
+        <div>
+          <button
+            onClick={() => {
+              returned = addMatter({ name: 'Creado Inline', caseNumber: '', rate: null, isPotentialClient: false });
+            }}
+          >
+            create
+          </button>
+          <p data-testid="names">{matters.map((m) => m.name).join('|')}</p>
+        </div>
+      );
+    }
+    render(
+      <DataProvider>
+        <Probe />
+      </DataProvider>
+    );
+
+    fireEvent.click(screen.getByText('create'));
+
+    expect(returned).toMatchObject({ name: 'Creado Inline' });
+    expect(returned.id).toEqual(expect.any(String));
+    expect(screen.getByTestId('names')).toHaveTextContent('Creado Inline');
+  });
+
   test('adds a matter and it appears in state', () => {
     render(<DataProvider><TestConsumer /></DataProvider>);
     fireEvent.click(screen.getByText('add matter'));

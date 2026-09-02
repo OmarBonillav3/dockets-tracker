@@ -31,7 +31,7 @@ describe('DailyReview', () => {
     renderReview();
     expect(screen.getByText('Task A')).toBeInTheDocument();
     expect(screen.getByText('Task B')).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent(/días sin registros/i);
+    expect(screen.getByRole('alert')).toHaveTextContent(/días? sin registros/i);
   });
 
   test('confirming a single entry updates its status', async () => {
@@ -84,6 +84,30 @@ describe('DailyReview', () => {
     // the change is persisted
     const saved = JSON.parse(localStorage.getItem('dockets:entries'));
     expect(saved.find((e) => e.id === 'e1').timeSpent).toBe('45 min');
+  });
+
+  test('a new matter can be created while editing an entry, without leaving the screen', async () => {
+    renderReview();
+    const user = userEvent.setup();
+    const [firstEdit] = screen.getAllByRole('button', { name: /^editar$/i });
+    await user.click(firstEdit);
+
+    const matterField = screen.getByLabelText(/^matter$/i);
+    await user.clear(matterField);
+    await user.type(matterField, 'Nuevo Cliente Urgente');
+    await user.click(screen.getByRole('option', { name: /crear matter/i }));
+    await user.type(screen.getByLabelText(/número de caso del nuevo matter/i), '0088-002');
+    await user.click(screen.getByRole('button', { name: /crear matter/i }));
+    expect(matterField).toHaveValue('Nuevo Cliente Urgente');
+
+    await user.click(screen.getByRole('button', { name: /^guardar$/i }));
+
+    const savedMatters = JSON.parse(localStorage.getItem('dockets:matters'));
+    const created = savedMatters.find((m) => m.name === 'Nuevo Cliente Urgente');
+    expect(created).toBeTruthy();
+    expect(created.caseNumber).toBe('0088-002');
+    const savedEntries = JSON.parse(localStorage.getItem('dockets:entries'));
+    expect(savedEntries.find((e) => e.id === 'e1').matterId).toBe(created.id);
   });
 
   test('cancelling an edit discards the changes', async () => {

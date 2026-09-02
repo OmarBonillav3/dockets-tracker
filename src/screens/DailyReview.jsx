@@ -5,7 +5,7 @@ import { parseDurationToHours, formatHours } from '../lib/timeUtils.js';
 import { EntryFormFields } from '../components/EntryFormFields.jsx';
 
 export function DailyReview() {
-  const { entries, matters, confirmEntry, confirmDay, updateEntry, deleteEntry } = useData();
+  const { entries, matters, addMatter, confirmEntry, confirmDay, updateEntry, deleteEntry } = useData();
   const now = new Date();
   const [year] = useState(now.getFullYear());
   const [month] = useState(now.getMonth());
@@ -15,6 +15,10 @@ export function DailyReview() {
   const grouped = groupEntriesByDate(entries);
   const emptyDays = findEmptyDays(entries, year, month);
   const dates = Object.keys(grouped).sort();
+
+  function createMatter(name, caseNumber) {
+    return addMatter({ name, caseNumber: caseNumber || '', rate: null, isPotentialClient: false });
+  }
 
   function startEdit(entry) {
     setEditingId(entry.id);
@@ -38,8 +42,6 @@ export function DailyReview() {
     cancelEdit();
   }
 
-  // Mirrors the monthly totals: confirmed entries only, so the number here
-  // matches what a day actually contributes to the export.
   function confirmedHours(dayEntries) {
     return dayEntries
       .filter((e) => e.status === 'confirmed')
@@ -89,7 +91,12 @@ export function DailyReview() {
                 {editingId === e.id ? (
                   <div className="stack">
                     <div className="field-grid">
-                      <EntryFormFields value={draft} matters={matters} onChange={setDraft} />
+                      <EntryFormFields
+                        value={draft}
+                        matters={matters}
+                        onChange={setDraft}
+                        onCreateMatter={createMatter}
+                      />
                     </div>
                     <div className="btn-row btn-row--end">
                       <button className="btn btn--ghost" onClick={cancelEdit}>Cancelar</button>

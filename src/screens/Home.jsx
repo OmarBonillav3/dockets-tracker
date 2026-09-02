@@ -6,11 +6,15 @@ import { EntryFormFields } from '../components/EntryFormFields.jsx';
 const EMPTY_FORM = { matterId: '', date: '', task: '', detailDescription: '', timeSpent: '', costAssociated: '' };
 
 export function Home() {
-  const { matters, entries, addEntry } = useData();
+  const { matters, entries, addEntry, addMatter } = useData();
   const [mode, setMode] = useState('manual');
   const [form, setForm] = useState(EMPTY_FORM);
   const [pastedText, setPastedText] = useState('');
   const [candidates, setCandidates] = useState([]);
+
+  function createMatter(name, caseNumber) {
+    return addMatter({ name, caseNumber: caseNumber || '', rate: null, isPotentialClient: false });
+  }
 
   function handleManualSubmit(e) {
     e.preventDefault();
@@ -76,7 +80,12 @@ export function Home() {
       {mode === 'manual' && (
         <form className="card" onSubmit={handleManualSubmit}>
           <div className="field-grid">
-            <EntryFormFields value={form} matters={matters} onChange={setForm} />
+            <EntryFormFields
+              value={form}
+              matters={matters}
+              onChange={setForm}
+              onCreateMatter={createMatter}
+            />
             <div className="form-actions">
               <button className="btn btn--ghost" type="button" onClick={handleRepeatLast}>
                 Repetir última tarea
@@ -111,6 +120,7 @@ export function Home() {
                       value={c}
                       matters={matters}
                       onChange={(next) => updateCandidate(i, next)}
+                      onCreateMatter={createMatter}
                       labelFor={(base) => `${base} sugerido ${i}`}
                       showCost={false}
                     />

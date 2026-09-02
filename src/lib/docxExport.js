@@ -18,12 +18,35 @@ export function entriesToRows(entries, matters) {
     });
 }
 
+const WORD_NAMESPACE = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
+
+function setCellText(cell, text) {
+  const existingText = cell.getElementsByTagName('w:t')[0];
+  if (existingText) {
+    existingText.setAttributeNS(XML_NAMESPACE, 'xml:space', 'preserve');
+    existingText.textContent = text;
+    return;
+  }
+
+  const paragraph = cell.getElementsByTagName('w:p')[0];
+  if (!paragraph) return;
+
+  const doc = paragraph.ownerDocument;
+  const run = doc.createElementNS(WORD_NAMESPACE, 'w:r');
+  const textNode = doc.createElementNS(WORD_NAMESPACE, 'w:t');
+  textNode.setAttributeNS(XML_NAMESPACE, 'xml:space', 'preserve');
+  textNode.textContent = text;
+  run.appendChild(textNode);
+  paragraph.appendChild(run);
+}
+
 /**
  * The bundled template (public/docket-template.docx) is Carus Law's real
- * template file, stripped down to its header row plus exactly one
- * formatting-only row: this function clones that second row once per docket
- * entry, filling in its 6 cells in place, so the exported file keeps the
- * template's real fonts, borders and logo untouched.
+ * template file, stripped down to its header row plus formatting-only rows:
+ * this function clones those rows once per docket entry, filling in their 6
+ * cells in place, so the exported file keeps the template's real fonts,
+ * borders and logo untouched.
  */
 export function fillTemplateDocumentXml(templateXmlString, rows) {
   const parser = new DOMParser();
@@ -43,20 +66,17 @@ export function fillTemplateDocumentXml(templateXmlString, rows) {
   if (rowNodes.length < 2) {
     throw new Error('La plantilla del docket no tiene la fila de formato esperada.');
   }
-  const templateRow = rowNodes[1];
+  const formatRows = rowNodes.slice(1);
 
-  for (const rowValues of rows) {
-    const clone = templateRow.cloneNode(true);
+  rows.forEach((rowValues, i) => {
+    const clone = formatRows[i % formatRows.length].cloneNode(true);
     const cells = Array.from(clone.getElementsByTagName('w:tc'));
-    cells.forEach((cell, i) => {
-      const textNode = cell.getElementsByTagName('w:t')[0];
-      if (textNode) {
-        textNode.textContent = String(rowValues[i] ?? '');
-      }
+    cells.forEach((cell, column) => {
+      setCellText(cell, String(rowValues[column] ?? ''));
     });
-    table.insertBefore(clone, templateRow);
-  }
-  table.removeChild(templateRow);
+    table.insertBefore(clone, formatRows[0]);
+  });
+  formatRows.forEach((row) => table.removeChild(row));
 
   return new XMLSerializer().serializeToString(xmlDoc);
 }

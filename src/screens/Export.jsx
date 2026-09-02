@@ -55,8 +55,9 @@ export function Export() {
     <div className="screen">
       <h1 className="screen__title">Exportar</h1>
       <p className="muted">
-        Elige los días que quieres exportar. Por defecto se selecciona hoy, así no vuelves a mandar lo
-        que ya enviaste.
+        Elige los días que quieres exportar. Puedes cambiar de mes y combinar días de meses distintos:
+        todo lo seleccionado sale junto, en una sola tabla y un solo documento. Por defecto se
+        selecciona hoy, así no vuelves a mandar lo que ya enviaste.
       </p>
       <DayPicker
         selectedDates={selectedDates}

@@ -543,6 +543,7 @@ textarea {
   height: var(--control-h);
   transition: background-color var(--t), box-shadow var(--t);
   appearance: none;
+  box-shadow: inset 0 0 0 1px var(--hairline);
 }
 
 .input::placeholder,
@@ -630,6 +631,51 @@ textarea {
   padding: 9px var(--sp-3);
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.combobox__option--create {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--accent-text);
+  font-weight: 500;
+}
+
+.combobox__create-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--sp-1));
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--elevated);
+  border-radius: var(--r-overlay);
+  box-shadow: var(--shadow-elevated);
+}
+
+.combobox__create-title {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.combobox__create-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  font-size: 13px;
+  line-height: 1;
 }
 
 .file-input {
@@ -890,14 +936,27 @@ textarea {
 }
 
 .row--editing {
-  background: var(--sunken);
+  background: var(--elevated);
+  box-shadow: var(--shadow-subtle), inset 0 0 0 1px var(--accent-soft);
   padding: var(--sp-4);
   align-items: stretch;
   flex-direction: column;
 }
 
 .row--editing:hover {
-  background: var(--sunken);
+  background: var(--elevated);
+}
+
+.row--editing .input,
+.row--editing .select,
+.row--editing .textarea {
+  background: var(--control);
+}
+
+.row--editing .input:hover,
+.row--editing .select:hover,
+.row--editing .textarea:hover {
+  background: var(--control-hover);
 }
 
 /* Day group inside Daily Review */
@@ -999,6 +1058,11 @@ textarea {
 .note {
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.field-grid > .note--full {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -1242,4 +1306,37 @@ textarea {
 
 .day-picker__actions {
   flex-wrap: wrap;
+}
+
+.day-picker__selection {
+  border-radius: var(--r-inner);
+  background: var(--sunken);
+  padding: var(--sp-3);
+}
+
+.day-picker__selection-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.day-picker__selection .chip-row {
+  margin-top: var(--sp-2);
+}
+
+.chip--removable {
+  border: none;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color var(--t), color var(--t);
+}
+
+.chip--removable:hover {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.chip__remove {
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.7;
 }

@@ -8,9 +8,16 @@ const MONTH_NAMES = [
 // Spanish weekday initials, Monday-first (L M X J V S D).
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
+const SHORT_MONTH_NAMES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
 function dayLabel(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
   return `${d} de ${MONTH_NAMES[m - 1].toLowerCase()} de ${y}`;
+}
+
+function shortDayLabel(dateStr) {
+  const [, m, d] = dateStr.split('-').map(Number);
+  return `${d} ${SHORT_MONTH_NAMES[m - 1]}`;
 }
 
 /**
@@ -27,6 +34,8 @@ export function DayPicker({ selectedDates, onChange, entryDates = [], initialMon
   const selected = new Set(selectedDates);
   const withEntries = new Set(entryDates);
   const weeks = getMonthGrid(view.year, view.month);
+  const sortedSelection = [...selectedDates].sort();
+  const monthsSelected = new Set(sortedSelection.map((d) => d.slice(0, 7))).size;
 
   function goToMonth(delta) {
     const d = new Date(view.year, view.month + delta, 1);
@@ -99,6 +108,31 @@ export function DayPicker({ selectedDates, onChange, entryDates = [], initialMon
           </div>
         ))}
       </div>
+
+      {sortedSelection.length > 0 && (
+        <div className="day-picker__selection">
+          <p className="day-picker__selection-title">
+            {sortedSelection.length} {sortedSelection.length === 1 ? 'día seleccionado' : 'días seleccionados'}
+            {monthsSelected > 1 && ` de ${monthsSelected} meses distintos, todos en un mismo documento`}
+          </p>
+          <div className="chip-row">
+            {sortedSelection.map((d) => (
+              <button
+                type="button"
+                key={d}
+                className="chip chip--accent chip--removable"
+                aria-label={`Quitar ${dayLabel(d)}`}
+                onClick={() => onChange(selectedDates.filter((other) => other !== d))}
+              >
+                {shortDayLabel(d)}
+                <span className="chip__remove" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="btn-row btn-row--end day-picker__actions">
         <button type="button" className="btn btn--ghost" onClick={selectVisibleMonth}>
