@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { useData } from '../context/DataContext.jsx';
-import { groupEntriesByDate, findEmptyDays } from '../lib/dateUtils.js';
+import { groupEntriesByDate, findEmptyDays, isInMonth } from '../lib/dateUtils.js';
 import { parseDurationToHours, formatHours } from '../lib/timeUtils.js';
 import { EntryFormFields } from '../components/EntryFormFields.jsx';
+import { MonthPicker } from '../components/MonthPicker.jsx';
 
 export function DailyReview() {
   const { entries, matters, addMatter, confirmEntry, confirmDay, updateEntry, deleteEntry } = useData();
   const now = new Date();
-  const [year] = useState(now.getFullYear());
-  const [month] = useState(now.getMonth());
+  const [period, setPeriod] = useState({ year: now.getFullYear(), month: now.getMonth() });
+  const { year, month } = period;
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
 
-  const grouped = groupEntriesByDate(entries);
+  const monthEntries = entries.filter((e) => isInMonth(e.date, year, month));
+  const grouped = groupEntriesByDate(monthEntries);
   const emptyDays = findEmptyDays(entries, year, month);
-  const dates = Object.keys(grouped).sort();
+  const dates = Object.keys(grouped).sort().reverse();
 
   function createMatter(name, caseNumber) {
     return addMatter({ name, caseNumber: caseNumber || '', rate: null, isPotentialClient: false });
@@ -56,6 +58,7 @@ export function DailyReview() {
   return (
     <div className="screen">
       <h1 className="screen__title">Revisión diaria</h1>
+      <MonthPicker year={year} month={month} onChange={setPeriod} />
       {emptyDays.length > 0 && (
         <div className="alert alert--card" role="alert">
           <div>
