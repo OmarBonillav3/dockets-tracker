@@ -19,7 +19,17 @@ export function MatterCombobox({
   const [highlighted, setHighlighted] = useState(0);
   const [createDraft, setCreateDraft] = useState(null);
   const creatingRef = useRef(false);
+  const blurTimeoutRef = useRef(null);
   const listboxId = useId();
+
+  function clearPendingBlur() {
+    if (blurTimeoutRef.current !== null) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
+    }
+  }
+
+  useEffect(() => clearPendingBlur, []);
 
   const selectedMatter = matters.find((m) => m.id === value) || null;
 
@@ -53,12 +63,14 @@ export function MatterCombobox({
   }
 
   function startCreate() {
+    clearPendingBlur();
     creatingRef.current = true;
     setOpen(false);
     setCreateDraft({ name: typedName, caseNumber: '' });
   }
 
   function cancelCreate() {
+    clearPendingBlur();
     creatingRef.current = false;
     setCreateDraft(null);
     setInputText(selectedMatter ? selectedMatter.name : '');
@@ -69,6 +81,7 @@ export function MatterCombobox({
     if (!name) return;
     const created = onCreateMatter(name, createDraft.caseNumber.trim());
     if (!created) return;
+    clearPendingBlur();
     creatingRef.current = false;
     setCreateDraft(null);
     onChange(created.id);
@@ -108,7 +121,9 @@ export function MatterCombobox({
   function handleBlur() {
     // Let a pending option's onMouseDown (which preventDefault()s to survive
     // this blur) run before we close and reset the visible text.
-    setTimeout(() => {
+    clearPendingBlur();
+    blurTimeoutRef.current = setTimeout(() => {
+      blurTimeoutRef.current = null;
       if (creatingRef.current) return;
       setOpen(false);
       setInputText(selectedMatter ? selectedMatter.name : '');
