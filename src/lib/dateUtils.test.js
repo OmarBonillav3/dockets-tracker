@@ -64,22 +64,30 @@ describe('getMonthGrid', () => {
 });
 
 describe('findEmptyDays', () => {
-  test('for a fully-elapsed past month, returns every day in the month with no entries', () => {
+  test('for a fully-elapsed past month, returns every day in the month with no entries, excluding Sundays', () => {
     const entries = [entry({ date: '2026-07-01' })];
     const today = new Date('2026-08-26T12:00:00');
     const emptyDays = findEmptyDays(entries, 2026, 6, today);
-    expect(emptyDays).toHaveLength(30);
+    expect(emptyDays).toHaveLength(26);
     expect(emptyDays).not.toContain('2026-07-01');
     expect(emptyDays).toContain('2026-07-02');
+    expect(emptyDays).not.toContain('2026-07-05');
   });
 
   test('for the current month, stops at today instead of listing days that have not happened yet', () => {
     const entries = [];
     const today = new Date('2026-08-05T12:00:00');
     const emptyDays = findEmptyDays(entries, 2026, 7, today);
-    expect(emptyDays).toHaveLength(5);
-    expect(emptyDays).toEqual(['2026-08-01', '2026-08-02', '2026-08-03', '2026-08-04', '2026-08-05']);
+    expect(emptyDays).toHaveLength(4);
+    expect(emptyDays).toEqual(['2026-08-01', '2026-08-03', '2026-08-04', '2026-08-05']);
+    expect(emptyDays).not.toContain('2026-08-02');
     expect(emptyDays).not.toContain('2026-08-06');
+  });
+
+  test('excludes Sundays even when they have no entries', () => {
+    const today = new Date('2026-08-05T12:00:00');
+    const emptyDays = findEmptyDays([], 2026, 7, today);
+    expect(emptyDays.every((d) => new Date(`${d}T00:00:00`).getDay() !== 0)).toBe(true);
   });
 
   test('for a future month, returns nothing — none of it has happened yet', () => {
