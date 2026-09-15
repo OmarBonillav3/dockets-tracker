@@ -62,7 +62,8 @@ export function findEmptyDays(entries, year, month, today = new Date()) {
 
   const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
   const allDates = getAllDatesInMonth(year, month);
-  const relevantDates = isCurrentMonth ? allDates.filter((d) => d <= toISODate(today)) : allDates;
+  const relevantDates = (isCurrentMonth ? allDates.filter((d) => d <= toISODate(today)) : allDates)
+    .filter((d) => new Date(`${d}T00:00:00`).getDay() !== 0);
 
   const datesWithEntries = new Set(
     entries.filter((e) => isInMonth(e.date, year, month)).map((e) => e.date)
